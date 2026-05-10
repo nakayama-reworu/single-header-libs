@@ -37,16 +37,14 @@ void *HashTable_New(
     }
 
     LOG_DEBUG(
-            NAME_OF(buckets_count) "=%d, "
-    NAME_OF(key_size) "=%d, " NAME_OF(key_offset) "=%d, "
-    NAME_OF(value_size) "=%d, " NAME_OF(value_offset) "=%d",
+            "buckets_count=%d, key_size=%d, key_offset=%d, value_size=%d, value_offset=%d",
             (int) buckets_count, (int) key_size, (int) key_offset, (int) value_size, (int) value_offset
     );
     const size_t total_bytes = buckets_count * sizeof(void *) + sizeof(HashTableHeader);
 
     HashTableHeader *header;
     if (NULL == (header = calloc(total_bytes, 1))) {
-        perror(NAME_OF(HashTable_New));
+        perror(nameof_identifier(HashTable_New));
         return NULL;
     }
 
@@ -93,7 +91,7 @@ void *HashTable_PutEntries(
 
 void *HashTable_AtKey(void *table, const void *key) {
     if (NULL == table) {
-        LOG_NULL(buckets);
+        LOG_NULL(table);
         return NULL;
     }
 
@@ -181,24 +179,24 @@ void HashTable_PrintStats(void *table) {
         } else {
             if (empty_begin >= 0) {
                 if (empty_begin == empty_end) {
-                    printf(NAME_OF(buckets)"[%d] = NULL\n", empty_begin);
+                    printf("buckets[%d] = NULL\n", empty_begin);
                 } else {
-                    printf(NAME_OF(buckets)"[%d..%d] = NULL\n", empty_begin, empty_end);
+                    printf("buckets[%d..%d] = NULL\n", empty_begin, empty_end);
                 }
 
                 empty_begin = empty_end = -1;
             }
             used_buckets_count++;
             total_entries += Array_Size(buckets[i]);
-            printf(NAME_OF(buckets)"[%d] = Array{.Size=%d}\n", (int) i, (int) Array_Size(buckets[i]));
+            printf("buckets[%d] = Array{.Size=%d}\n", (int) i, (int) Array_Size(buckets[i]));
         }
     }
 
     if (empty_begin >= 0) {
         if (empty_begin == empty_end) {
-            printf(NAME_OF(buckets)"[%d] = NULL\n", empty_begin);
+            printf("buckets[%d] = NULL\n", empty_begin);
         } else {
-            printf(NAME_OF(buckets)"[%d..%d] = NULL\n", empty_begin, empty_end);
+            printf("buckets[%d..%d] = NULL\n", empty_begin, empty_end);
         }
     }
 
@@ -209,7 +207,7 @@ void HashTable_PrintStats(void *table) {
 
 void HashTable_Free(void *table, HashTableEntryDestructor free_entry) {
     if (NULL == table) {
-        LOG_NULL(buckets);
+        LOG_NULL(table);
         return;
     }
     void **buckets = table;

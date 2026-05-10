@@ -107,7 +107,7 @@ void ItemArrayPrint(Item *items, char *end) {
         end = "\n";
     }
 
-    printf(NAME_OF(items)"=[");
+    printf("%s=[", nameof_identifier(items));
     for (typeof(items) item = items; item != Array_End(items); item++) {
         switch (item->Type) {
             case CONST:
@@ -151,7 +151,12 @@ int main() {
     Array_Free(minus_two, NULL);
 
     // Extend with array literal -> [1 2 + 2 - *]
-    ARRAY_EXTEND_WITH_ARRAY_LITERAL(expression, ((Item[]) {ItemBinOp('*')}));
+    Array_ExtendWithValues(
+            expression,
+            ((Item[]) {ItemBinOp('*')}),
+            1,
+            sizeof(Item)
+    );
     ItemArrayPrint(expression, "\n");
 
     // Temporary array with more items

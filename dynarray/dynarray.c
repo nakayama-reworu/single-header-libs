@@ -18,7 +18,7 @@ void *Array_New(const size_t size, const size_t element_size_bytes) {
 
     ArrayHeader *header;
     if (NULL == (header = (ArrayHeader *) malloc(total_size_bytes))) {
-        perror(NAME_OF(ArrayNew));
+        perror(nameof_identifier(Array_New));
         return NULL;
     }
 
@@ -98,18 +98,18 @@ void *Array_ReserveToFit(void *array, size_t size) {
 
     if (new_capacity < size) {
         LOG_ERROR(
-                NAME_OF(new_capacity) "=%d is not enough for " NAME_OF(size) "=%d elements",
+                "new_capacity=%d is not enough for size=%d elements",
                 (int) new_capacity, (int) size
         );
         return NULL;
     }
     assert(new_capacity >= size);
 
-    LOG_DEBUG(NAME_OF(new_capacity) "=%d", (int) new_capacity);
+    LOG_DEBUG("new_capacity=%d", (int) new_capacity);
 
     void *new_array;
     if (NULL == (new_array = Array_New(new_capacity, Array_ElementSize(array)))) {
-        perror(NAME_OF(ArrayReserveToFit));
+        perror(nameof_identifier(Array_ReserveToFit));
         return NULL;
     }
 
@@ -119,13 +119,6 @@ void *Array_ReserveToFit(void *array, size_t size) {
     Array_Free(array, NULL);
 
     return new_array;
-}
-
-
-void Array_FillFrom(void *array, const void *value) {
-    for (size_t i = 0; i < Array_Size(array); i += 1) {
-        memcpy(Array_At(array, i), value, Array_ElementSize(array));
-    }
 }
 
 
@@ -151,8 +144,7 @@ void *Array_WithAppended(void *array, const void *element) {
     memcpy(Array_At(array, old_size), element, Array_ElementSize(array));
 
     LOG_DEBUG(
-            NAME_OF(old_size) "=%d, " NAME_OF(new_size) "=%d, "
-            NAME_OF(old_capacity) "=%d, " NAME_OF(new_capacity) "=%d",
+            "old_size=%d, new_size=%d, old_capacity=%d, new_capacity=%d",
             (int) old_size, (int) new_size, (int) old_capacity, (int) Array_Capacity(array)
     );
 
@@ -168,7 +160,7 @@ void *Array_ExtendWithValues(
 ) {
     if (Array_ElementSize(array) != element_size) {
         LOG_ERROR(
-                NAME_OF(element_size) "=%d is different from array element size (%d)",
+                "element_size=%d is different from array element size (%d)",
                 (int) element_size, (int) Array_ElementSize(array)
         );
         return NULL;

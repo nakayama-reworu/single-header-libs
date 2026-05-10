@@ -30,46 +30,31 @@ size_t Array_Capacity(const void *array);
 
 void *Array_ReserveToFit(void *array, size_t size);
 
-void Array_FillFrom(void *array, const void *value);
-
-#define Array_Fill(Array, Value)    Array_FillFrom((Array), ARRAY_LITERAL_FROM_VA_ARGS(Value))
-
 #define Array_At(array, index)  SHIFT((array), (index) * Array_ElementSize(array))
 
 void *Array_WithAppended(void *array, const void *element);
 
-#define ARRAY_LITERAL_ELEMENT_SIZE(array_literal)    sizeof((array_literal)[0])
-#define ARRAY_LITERAL_ELEMENTS_COUNT(array_literal)  (sizeof((array_literal)) / ARRAY_LITERAL_ELEMENT_SIZE(array_literal))
-
 #define Array_Append(array, value) \
-    (array = Array_WithAppended((array), ARRAY_LITERAL_FROM_VA_ARGS_TYPE(typeof(*array), value)))
+    (array = Array_WithAppended((array), array_literal_of_type(typeof(*array), value)))
 
 void *Array_ExtendWithValues(void *array, const void *data, size_t elements_count, size_t element_size);
 
-#define ARRAY_EXTEND_WITH_ARRAY_LITERAL(array, array_literal) \
-    (array = Array_ExtendWithValues( \
-        array, \
-        array_literal, \
-        ARRAY_LITERAL_ELEMENTS_COUNT(array_literal), \
-        ARRAY_LITERAL_ELEMENT_SIZE(array_literal) \
+#define Array_ExtendWith(array, ...)        \
+    (array = Array_ExtendWithValues(        \
+        (array),                            \
+        array_literal_sized(__VA_ARGS__),   \
+        sizeof_first(__VA_ARGS__)           \
     ))
-
-#define Array_ExtendWith(array, ...) \
-    ARRAY_EXTEND_WITH_ARRAY_LITERAL(array, ARRAY_LITERAL_FROM_VA_ARGS(__VA_ARGS__))
 
 void *Array_Extend(void *array, const void *other);
 
 void *Array_OfValues(const void *data, size_t elements_count, size_t element_size);
 
-#define ARRAY_FROM_ARRAY_LITERAL(array_literal) \
-    Array_OfValues( \
-        array_literal, \
-        ARRAY_LITERAL_ELEMENTS_COUNT(array_literal), \
-        ARRAY_LITERAL_ELEMENT_SIZE(array_literal) \
+#define Array_Of(...)                       \
+    Array_OfValues(                         \
+        array_literal_sized(__VA_ARGS__),   \
+        sizeof_first(__VA_ARGS__)           \
     )
-
-#define Array_Of(...) \
-    ARRAY_FROM_ARRAY_LITERAL(ARRAY_LITERAL_FROM_VA_ARGS(__VA_ARGS__))
 
 bool Array_PopTo(void *array, void *dst);
 

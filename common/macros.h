@@ -6,7 +6,8 @@
 #define CONCAT_(x, y)   x ## y
 #define CONCAT(x, y)    CONCAT_(x, y)
 
-#define NAME_OF(It) #It
+// #define nameof(it)              NAME_OF(it)
+#define nameof_identifier(it)   ({ (void) it; #it; })
 
 #define LOG(Level, Message, ...)                        \
 do {                                                    \
@@ -25,15 +26,29 @@ do {                                                    \
 #endif
 
 #define LOG_ERROR(Message, ...) LOG(ERROR, Message, ##__VA_ARGS__)
-#define LOG_NULL(It)            LOG_ERROR(NAME_OF(It) " is NULL")
+#define LOG_NULL(It)            LOG_ERROR("%s is NULL", nameof_identifier(It))
 
-#define TYPE_OF_FIRST(First, ...)                   typeof(First)
-#define ARRAY_LITERAL_FROM_VA_ARGS(...)             ((TYPE_OF_FIRST(__VA_ARGS__)[]) {__VA_ARGS__})
-#define ARRAY_LITERAL_FROM_VA_ARGS_TYPE(Type, ...)  ((Type[]) {__VA_ARGS__})
+#define typeof_first(First, ...)    typeof(First)
+#define sizeof_first(...)           sizeof(typeof_first(__VA_ARGS__))
+
+#define ARRAY_LITERAL_FROM_VA_ARGS_(...)                ((typeof_first(__VA_ARGS__)[]) {__VA_ARGS__})
+#define ARRAY_LITERAL_FROM_VA_ARGS_TYPE_(Type, ...)     ((Type[]) {__VA_ARGS__})
+
+#define array_literal(...)                  ARRAY_LITERAL_FROM_VA_ARGS_(__VA_ARGS__)
+#define array_literal_of_type(type, ...)    ARRAY_LITERAL_FROM_VA_ARGS_TYPE_(type, __VA_ARGS__)
+
+#define array_literal_size(...) \
+    (sizeof(array_literal(__VA_ARGS__)) / sizeof(typeof_first(__VA_ARGS__)))
+
+#define array_literal_sized(...) \
+    array_literal(__VA_ARGS__), array_literal_size(__VA_ARGS__)
+
+#define array_literal_of_type_sized(type, ...) \
+    array_literal_of_type(type, __VA_ARGS__), array_literal_size(__VA_ARGS__)
 
 #define SHIFT(Ptr, OffsetBytes) ((void *) ((uint8_t *) Ptr + (OffsetBytes)))
 
-#define TYPEOF_MEMBER(Type, MemberName) typeof(((Type){0}).MemberName)
-#define SIZEOF_MEMBER(Type, MemberName) sizeof(((Type){0}).MemberName)
+#define typeof_member(Type, MemberName) typeof(((Type){0}).MemberName)
+#define sizeof_member(Type, MemberName) sizeof(((Type){0}).MemberName)
 
 #endif //PLAYGROUND_MACROS_H

@@ -46,8 +46,8 @@ void *HashTable_New(
 (entry_type **) HashTable_New( \
     hash_fn, compare_fn, \
     HASHTABLE_DEFAULT_BUCKETS_COUNT, \
-    SIZEOF_MEMBER(entry_type, Key), offsetof(entry_type, Key), \
-    SIZEOF_MEMBER(entry_type, Value), offsetof(entry_type, Value), \
+    sizeof_member(entry_type, Key), offsetof(entry_type, Key), \
+    sizeof_member(entry_type, Value), offsetof(entry_type, Value), \
     sizeof(entry_type) \
 )
 
@@ -57,31 +57,24 @@ void *HashTable_PutEntries(
         size_t entries_count
 );
 
-#define HASHTABLE_PUT_ENTRIES(table, array_literal) \
+#define HashTable_PutAll(table, ...) \
 (typeof(**table) **) HashTable_PutEntries( \
     (table), \
-    (array_literal), \
-    ARRAY_LITERAL_ELEMENTS_COUNT(array_literal) \
-)
-
-#define HashTable_PutAll(table, ...) \
-HASHTABLE_PUT_ENTRIES( \
-    (table), \
-    ARRAY_LITERAL_FROM_VA_ARGS_TYPE(typeof(**table), __VA_ARGS__) \
+    array_literal_of_type_sized(typeof(**table), __VA_ARGS__) \
 )
 
 void *HashTable_AtKey(void *table, const void *key);
 
 #define HashTable_At(table, key) \
-(TYPEOF_MEMBER(typeof(**table), Value) *) HashTable_AtKey(\
+(typeof_member(typeof(**table), Value) *) HashTable_AtKey(\
     (void **) (table), \
-    ARRAY_LITERAL_FROM_VA_ARGS((TYPEOF_MEMBER(typeof(**table), Key)) key)\
+    array_literal_of_type(typeof_member(typeof(**table), Key), key)\
 )
 
 void *HashTable_PutEntry(void *table, const void *entry);
 
 #define HashTable_Put(table, key, value) \
-(TYPEOF_MEMBER(typeof(**table), Value) *) HashTable_PutEntry( \
+(typeof_member(typeof(**table), Value) *) HashTable_PutEntry( \
     (void**) (table), \
     &((typeof(**table)) {key, value}) \
 )
