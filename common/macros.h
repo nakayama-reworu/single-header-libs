@@ -23,4 +23,9 @@
 #define TYPE_OF_FIRST(First, ...)       typeof(First)
 #define ARRAY_LITERAL_FROM_VA_ARGS(...) ((TYPE_OF_FIRST(__VA_ARGS__)[]) {__VA_ARGS__})
 
+#define SHIFT(Ptr, OffsetBytes) ((void *) ((uint8_t *) Ptr + (OffsetBytes)))
+
+#define TYPEOF_MEMBER(Type, MemberName) typeof(((Type){0}).MemberName)
+#define SIZEOF_MEMBER(Type, MemberName) sizeof(((Type){0}).MemberName)
+
 #endif //PLAYGROUND_MACROS_H
