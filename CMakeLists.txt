@@ -25,7 +25,7 @@ endif()
 
 set(MAP_TEST_NAME ${PROJECT_NAME}-map)
 add_executable(${MAP_TEST_NAME}
-        collections/map.c)
+        collections/map_test.c)
 target_link_libraries(${MAP_TEST_NAME} m)
 target_compile_options(${MAP_TEST_NAME} PRIVATE -Wall -Werror -Wextra -Wpointer-arith)
 target_include_directories(${MAP_TEST_NAME} PRIVATE ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/collections)
