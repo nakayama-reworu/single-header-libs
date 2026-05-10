@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #define Pair(TKey, TValue)      TKey##TValue##Pair
 
@@ -46,6 +47,25 @@ void *HashTable_New(
     SIZEOF_MEMBER(entry_type, Key), offsetof(entry_type, Key), \
     SIZEOF_MEMBER(entry_type, Value), offsetof(entry_type, Value), \
     sizeof(entry_type) \
+)
+
+void *HashTable_PutEntries(
+        void *table,
+        const void *entries,
+        size_t entries_count
+);
+
+#define HASHTABLE_PUT_ENTRIES(table, array_literal) \
+(typeof(**table) **) HashTable_PutEntries( \
+    (table), \
+    (array_literal), \
+    ARRAY_LITERAL_ELEMENTS_COUNT(array_literal) \
+)
+
+#define HashTable_PutAll(table, ...) \
+HASHTABLE_PUT_ENTRIES( \
+    (table), \
+    ARRAY_LITERAL_FROM_VA_ARGS_TYPE(typeof(**table), __VA_ARGS__) \
 )
 
 void *HashTable_AtKey(void *table, const void *key);

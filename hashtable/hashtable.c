@@ -66,6 +66,30 @@ void *HashTable_New(
     return header->Buckets;
 }
 
+void *HashTable_PutEntries(
+        void *table,
+        const void *entries,
+        size_t entries_count
+) {
+    if (NULL == table) {
+        LOG_NULL(table);
+        return NULL;
+    }
+
+    HashTableHeader *header = IMPL_HASHTABLE_HEADER(table);
+
+    for (size_t i = 0; i < entries_count; i++) {
+        if (NULL != HashTable_PutEntry(table, SHIFT(entries, i * header->EntrySize))) {
+            continue;
+        }
+
+        LOG_ERROR("Failed to add entry");
+        HashTable_Free(table, NULL);
+        return NULL;
+    }
+
+    return table;
+}
 
 void *HashTable_AtKey(void *table, const void *key) {
     if (NULL == table) {
@@ -126,7 +150,7 @@ void *HashTable_PutEntry(void *table, const void *entry) {
         }
     }
 
-    buckets[bucket_index] = bucket = Array_WithAppendedFrom(bucket, entry);
+    buckets[bucket_index] = bucket = Array_WithAppended(bucket, entry);
     return SHIFT(Array_At(bucket, Array_Size(bucket) - 1), header->ValueOffset);
 }
 
