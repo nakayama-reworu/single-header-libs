@@ -38,7 +38,11 @@ return `true` if vector contains elements, and `false` otherwise;
  * `Vector_Empty(Vec) -> bool` - `true` iff vector is empty;
  * `Vector_Clear(VecPtr)` - set `Size` to `0`;
  * `Vector_Any(Vec, Value, PredicateExpr) -> bool` - `true` iff `PredicateExpr`
-is true for any element.
+is true for any element;
+ * `Vector_Slice(TSlice, Vec, Start, End) -> TSlice`, 
+`Vector_SliceFrom(TSlice, Vec, Start) -> TSlice`,
+`Vector_SliceTo(TSlice, Vec, End) -> TSlice` - get a mutable view
+of sub-vector.
 
 Simple dynamic array of type `T`. Any struct with fields `size_t Size`, 
 `size_t Capacity` and `T *Items` is compatible with `Vector_*` operations.

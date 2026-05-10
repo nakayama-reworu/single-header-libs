@@ -240,6 +240,153 @@ Testing_Fact(Any_returns_true_if_an_elements_matches) {
     Vector_Free(&sut);
 }
 
+Testing_Fact(Slice_returns_an_empty_slice_if_start_and_end_are_equal) {
+    Vector_Of(int) sut = {0};
+
+    Vector_PushBack(&sut, 1);
+    Vector_PushBack(&sut, 2);
+    Vector_PushBack(&sut, 3);
+    Vector_PushBack(&sut, 4);
+
+    typedef VectorSlice_Of(int) IntSlice;
+    IntSlice slice = Vector_Slice(IntSlice, sut, 2, 2);
+
+    Testing_Assert(Vector_Empty(slice), "expected slice to be empty");
+
+    Vector_Free(&sut);
+}
+
+Testing_Fact(Slice_handles_out_of_bounds_start) {
+    Vector_Of(int) sut = {0};
+
+    Vector_PushBack(&sut, 1);
+    Vector_PushBack(&sut, 2);
+    Vector_PushBack(&sut, 3);
+    Vector_PushBack(&sut, 4);
+
+    typedef VectorSlice_Of(int) IntSlice;
+
+    IntSlice s1 = Vector_Slice(IntSlice, sut, -42, 2);
+    size_t const expectedSize1 = 2;
+    Testing_Assert(expectedSize1 == s1.Size, "expected size to be %zu but was %zu", expectedSize1, s1.Size);
+
+    IntSlice s2 = Vector_Slice(IntSlice, sut, 42, 2);
+    size_t const expectedSize2 = 0;
+    Testing_Assert(expectedSize2 == s2.Size, "expected size to be %zu but was %zu", expectedSize2, s2.Size);
+
+    Vector_Free(&sut);
+}
+
+Testing_Fact(Slice_handles_out_of_bounds_end) {
+    Vector_Of(int) sut = {0};
+
+    Vector_PushBack(&sut, 1);
+    Vector_PushBack(&sut, 2);
+    Vector_PushBack(&sut, 3);
+    Vector_PushBack(&sut, 4);
+
+    typedef VectorSlice_Of(int) IntSlice;
+
+    IntSlice s1 = Vector_Slice(IntSlice, sut, 2, 42);
+    size_t const expectedSize1 = 2;
+    Testing_Assert(expectedSize1 == s1.Size, "expected size to be %zu but was %zu", expectedSize1, s1.Size);
+
+    IntSlice s2 = Vector_Slice(IntSlice, sut, 2, -42);
+    size_t const expectedSize2 = 0;
+    Testing_Assert(expectedSize2 == s2.Size, "expected size to be %zu but was %zu", expectedSize2, s2.Size);
+
+    Vector_Free(&sut);
+}
+
+Testing_Fact(Slice_returns_correct_elements) {
+    Vector_Of(int) sut = {0};
+
+    Vector_PushBack(&sut, 1);
+    Vector_PushBack(&sut, 2);
+    Vector_PushBack(&sut, 3);
+    Vector_PushBack(&sut, 4);
+
+    typedef VectorSlice_Of(int) IntSlice;
+
+    size_t start = 1;
+    size_t end = 3;
+    size_t expectedSize = end - start;
+    IntSlice slice = Vector_Slice(IntSlice, sut, start, end);
+
+    Testing_Assert(expectedSize == slice.Size, "expected slice size to be %zu but was %zu", expectedSize, slice.Size);
+    Testing_Assert(
+            Vector_At(sut, start) == slice.Items,
+            "expected slice.Items to point to vector element at %zu", start
+    );
+
+    Vector_Free(&sut);
+}
+
+Testing_Fact(Slice_returns_all_elememnts_if_start_is_0_and_end_is_Size) {
+    Vector_Of(int) sut = {0};
+
+    Vector_PushBack(&sut, 1);
+    Vector_PushBack(&sut, 2);
+    Vector_PushBack(&sut, 3);
+    Vector_PushBack(&sut, 4);
+
+    typedef VectorSlice_Of(int) IntSlice;
+    IntSlice slice = Vector_Slice(IntSlice, sut, 0, sut.Size);
+
+    Testing_Assert(sut.Size == slice.Size, "expected slice size to be equal to vector size");
+    Testing_Assert(sut.Items == slice.Items, "expected slice.Items to point to vector's Items");
+
+    Vector_Free(&sut);
+}
+
+Testing_Fact(Can_take_slice_of_a_slice) {
+    Vector_Of(int) sut = {0};
+
+    Vector_PushBack(&sut, 1);
+    Vector_PushBack(&sut, 2);
+    Vector_PushBack(&sut, 3);
+    Vector_PushBack(&sut, 4);
+    Vector_PushBack(&sut, 5);
+    Vector_PushBack(&sut, 6);
+
+    typedef VectorSlice_Of(int) IntSlice;
+    size_t start1 = 1, end1 = 4;
+    IntSlice s1 = Vector_Slice(IntSlice, sut, start1, end1);
+    size_t start2 = 1, end2 = 2;
+    size_t expectedSize2 = end2 - start2;
+    IntSlice s2 = Vector_Slice(IntSlice, s1, start2, end2);
+
+    Testing_Assert(expectedSize2 == s2.Size, "expected size to be %zu but was %zu", expectedSize2, s2.Size);
+    Testing_Assert(Vector_At(sut, start1 + start2) == s2.Items, "slice's Items points to wrong element");
+
+    Vector_Free(&sut);
+}
+
+Testing_Fact(SliceTo_and_SliceFrom_combined_contain_all_elements_of_initial_vector) {
+    Vector_Of(int) sut = {0};
+
+    Vector_PushBack(&sut, 1);
+    Vector_PushBack(&sut, 2);
+    Vector_PushBack(&sut, 3);
+    Vector_PushBack(&sut, 4);
+    Vector_PushBack(&sut, 5);
+    Vector_PushBack(&sut, 6);
+
+    typedef VectorSlice_Of(int) IntSlice;
+
+    size_t splitIndex = 3;
+    IntSlice s1 = Vector_SliceTo(IntSlice, sut, splitIndex);
+    IntSlice s2 = Vector_SliceFrom(IntSlice, sut, splitIndex);
+
+    Testing_Assert(sut.Size == s1.Size + s2.Size, "expected total size of slices to be equal to vector's Size");
+    Testing_Assert(
+            s1.Items + s1.Size == s2.Items,
+            "expected Items of second slice to begin after items of first slice"
+    );
+
+    Vector_Free(&sut);
+}
+
 Testing_AllTests = {
         Testing_AddTest(empty_vector_has_size_and_capacity_of_0),
         Testing_AddTest(PushBack_appends_elements),
@@ -257,6 +404,13 @@ Testing_AllTests = {
         Testing_AddTest(Empty_returns_true_after_Clear),
         Testing_AddTest(Any_returns_false_if_no_elements_match),
         Testing_AddTest(Any_returns_true_if_an_elements_matches),
+        Testing_AddTest(Slice_returns_an_empty_slice_if_start_and_end_are_equal),
+        Testing_AddTest(Slice_handles_out_of_bounds_start),
+        Testing_AddTest(Slice_handles_out_of_bounds_end),
+        Testing_AddTest(Slice_returns_correct_elements),
+        Testing_AddTest(Slice_returns_all_elememnts_if_start_is_0_and_end_is_Size),
+        Testing_AddTest(Can_take_slice_of_a_slice),
+        Testing_AddTest(SliceTo_and_SliceFrom_combined_contain_all_elements_of_initial_vector),
 };
 
 Testing_RunAllTests();

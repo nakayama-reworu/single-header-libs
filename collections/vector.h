@@ -94,28 +94,40 @@ for (                                                       \
     _matches;                                   \
 })
 
-#define Slice_Of(TValue)    \
+#define VectorSlice_Of(TValue)    \
 struct {                    \
     size_t Size;            \
     TValue *Items;          \
 }
 
-#define Vector_Slice(Vec, Begin, End)       \
-({                                          \
-    size_t _begin = (Begin);                \
-    size_t _end = (End);                    \
-    (Slice_Of(typeof((Vec).Items[0]))) {    \
-        .Size=(_end-_begin),                \
-        .Items=(Vec).Items+_begin           \
-    };                                      \
+#define Vector_Slice(TSlice, Vec, Start, End)                       \
+({                                                                  \
+    __auto_type _vec_slice = (Vec);                                 \
+    long long _start = (Start);                                     \
+    if (_start < 0) _start = 0;                                     \
+    if (_start >= _vec_slice.Size) _start = _vec_slice.Size - 1;    \
+    long long _end = (End);                                         \
+    if (_end < 0) _end = 0;                                         \
+    if (_end > _vec_slice.Size) _end = _vec_slice.Size;             \
+    __auto_type _items = Vector_At(_vec_slice, _start);             \
+    bool _ok = 0 <= _start                                          \
+        && _start < _vec_slice.Size                                 \
+        && _end >= _start                                           \
+        && _end <= _vec_slice.Size;                                 \
+    (TSlice) {                                                      \
+        .Size=(_ok ? (_end-_start) : 0),                            \
+        .Items=(_ok ? _items : NULL),                               \
+    };                                                              \
 })
 
-#define Vector_SliceAs(TSlice, Vec, Begin, End) \
-({                                              \
-    size_t _begin = (Begin);                    \
-    size_t _end = (End);                        \
-    (TSlice) {                                  \
-        .Size=(_end-_begin),                    \
-        .Items=(Vec).Items+_begin               \
-    };                                          \
+#define Vector_SliceFrom(TSlice, Vec, Start)                                \
+({                                                                          \
+    __auto_type _vec_slice_from = (Vec);                                    \
+    Vector_Slice(TSlice, _vec_slice_from, (Start), _vec_slice_from.Size);   \
+})
+
+#define Vector_SliceTo(TSlice, Vec, End)            \
+({                                                  \
+    __auto_type _vec_slice_to = (Vec);              \
+    Vector_Slice(TSlice, _vec_slice_to, 0, (End));  \
 })
