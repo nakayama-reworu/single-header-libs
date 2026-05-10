@@ -9,7 +9,7 @@
 #include <stddef.h>
 #include <stdalign.h>
 
-#define Pair(TKey, TValue)      TKey##TValue##Pair
+#define Pair(TKey, TValue)      TKey##_##TValue##_##pair_t
 
 #define DeclarePair(TKey, TValue) \
 typedef struct { \
