@@ -30,15 +30,16 @@ size_t ArrayCapacity(const void *array);
 
 void *ArrayReserveToFit(void *array, size_t size);
 
+void ArrayFill(void *array, const void *value);
+
+#define ARRAY_FILL(Array, Value)    ArrayFill((Array), ARRAY_LITERAL_FROM_VA_ARGS(Value))
+
 #define ARRAY_AT(Array, I)  ((uint8_t *) (Array) + (I) * ArrayElementSize(Array))
 
 void *ArrayAppend(void *array, const void *element);
 
-#define TYPE_OF_FIRST(First, ...)                   typeof(First)
 #define ARRAY_LITERAL_ELEMENT_SIZE(ArrayLiteral)    sizeof((ArrayLiteral)[0])
 #define ARRAY_LITERAL_ELEMENTS_COUNT(ArrayLiteral)  (sizeof((ArrayLiteral)) / ARRAY_LITERAL_ELEMENT_SIZE(ArrayLiteral))
-
-#define ARRAY_LITERAL_FROM_VA_ARGS(...)             ((TYPE_OF_FIRST(__VA_ARGS__)[]) {__VA_ARGS__})
 
 #define ARRAY_APPEND(Array, Value) (Array = ArrayAppend((Array), ARRAY_LITERAL_FROM_VA_ARGS(Value)))
 
@@ -71,5 +72,10 @@ void *ArrayOfValues(const void *data, size_t elements_count, size_t element_size
 bool ArrayPop(void *array, void *dst);
 
 #define ARRAY_END(Array) (typeof(Array)) (ARRAY_AT(Array, ArraySize(Array)))
+
+#define ARRAY_FOREACH(Array, Action) \
+for (typeof(Array) _it = (Array); _it != ARRAY_END(Array); _it++) { \
+    Action(_it); \
+}
 
 #endif //PLAYGROUND_DYNARRAY_H

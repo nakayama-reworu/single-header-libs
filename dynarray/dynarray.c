@@ -115,6 +115,13 @@ void *ArrayReserveToFit(void *array, size_t size) {
 }
 
 
+void ArrayFill(void *array, const void *value) {
+    for (size_t i = 0; i < ArraySize(array); i += 1) {
+        memcpy(ARRAY_AT(array, i), value, ArrayElementSize(array));
+    }
+}
+
+
 void *ArrayAppend(void *array, const void *element) {
     if (NULL == array) {
         LOG_NULL(array);
