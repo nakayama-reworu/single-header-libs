@@ -1,22 +1,10 @@
+#include "hashtable.h"
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-
-#define Pair(key_type, value_type)      pair_##key_type##_##value_type
-
-#define pair_declare(key_type, value_type)  \
-typedef struct {                            \
-    key_type key;                           \
-    value_type value;                       \
-} Pair(key_type, value_type)
-
-#define typeof_member(type, member) typeof(((type){0}).member)
-
-typedef size_t (*Hash)(const void *);
-
-typedef int (*Compare)(const void *, const void *);
 
 #define print_error(failed_call)                \
 fprintf(                                        \
@@ -41,11 +29,8 @@ do {                                                \
     exit(EXIT_FAILURE);                             \
 } while (0)
 
-#include <assert.h>
-
 #define on_malloc_error() exit(EXIT_FAILURE)
 
-#define HASHTABLE_DEFAULT_CAPACITY  (32)
 #define LOAD_FACTOR_THRESHOLD       (0.5f)
 
 typedef struct Header {
@@ -53,6 +38,7 @@ typedef struct Header {
     Compare compare;
 
     size_t key_size;
+    size_t key_offset;
 
     size_t value_size;
     size_t value_offset;
@@ -71,12 +57,16 @@ static Header *header_get(void *hashtable) { return (Header *) hashtable - 1; }
 static const Header *header_get_const(const void *hashtable) { return (const Header *) hashtable - 1; }
 
 size_t hashtable_size(const void *hashtable) { return header_get_const(hashtable)->size; }
+
+bool hashtable_empty(const void *hashtable) { return 0 == hashtable_size(hashtable); }
+
 size_t hashtable_capacity(const void *hashtable) { return header_get_const(hashtable)->capacity; }
 
 void *hashtable_new(
         Hash hash,
         Compare compare,
         size_t key_size,
+        size_t key_offset,
         size_t value_size,
         size_t value_offset,
         size_t entry_size,
@@ -93,13 +83,14 @@ void *hashtable_new(
     //  Header | Entries | Flags
     Header *header = calloc(1, total_size);
     if (NULL == header) {
-        print_error("calloc");
+        print_error(calloc);
         on_malloc_error();
     }
 
     header->hash = hash;
     header->compare = compare;
     header->key_size = key_size;
+    header->key_offset = key_offset;
     header->value_size = value_size;
     header->value_offset = value_offset;
     header->entry_size = entry_size;
@@ -109,16 +100,6 @@ void *hashtable_new(
 
     return header->data;
 }
-
-#define hashtable_of_type(entry_type, hash, compare)    \
-(entry_type *) hashtable_new(                           \
-    hash, compare,                                      \
-    sizeof(((entry_type){0}).key),                      \
-    sizeof(((entry_type){0}).value),                    \
-    offsetof(entry_type, value),                        \
-    sizeof(entry_type),                                 \
-    HASHTABLE_DEFAULT_CAPACITY                          \
-)
 
 void hashtable_free(void *hashtable) {
     free(header_get(hashtable));
@@ -170,11 +151,6 @@ void *hashtable_value_at(void *hashtable, const void *key) {
     return entry_value(header, entry);
 }
 
-#define hashtable_at(ht, k)                                 \
-(typeof_member(typeof(*(ht)), value) *) hashtable_value_at( \
-    (ht), (typeof_member(typeof(*(ht)), key)[]){k}          \
-)
-
 bool hashtable_copy_value_to(const void *hashtable, const void *key, void *dst) {
     const Header *header = header_get_const(hashtable);
     size_t index;
@@ -186,17 +162,6 @@ bool hashtable_copy_value_to(const void *hashtable, const void *key, void *dst) 
     memcpy(dst, entry_value(header, entry), header->value_size);
     return true;
 }
-
-#define hashtable_get(ht, k)                        \
-({                                                  \
-    typeof_member(typeof(*(ht)), value) _v = {};    \
-    assert(hashtable_copy_value_to(                 \
-        (ht),                                       \
-        (typeof_member(typeof(*(ht)), key)[]){k},   \
-        &_v                                         \
-    ));                                             \
-    _v;                                             \
-})
 
 static void *hashtable_put_ignore_load(Header *header, const void *key, const void *value) {
     size_t entry_index;
@@ -218,19 +183,20 @@ static float load_factor(const Header *header) {
     return (float) header->size / (float) header->capacity;
 }
 
-static Header *realloc_hashtable(Header *old) {
+static Header *hashtable_realloc(Header *old) {
     const size_t new_capacity = old->capacity * 3 / 2 + 1;
     void *new_table = hashtable_new(
             old->hash,
             old->compare,
             old->key_size,
+            old->key_offset,
             old->value_size,
             old->value_offset,
             old->entry_size,
             new_capacity
     );
     if (NULL == new_table) {
-        print_error("calloc");
+        print_error(calloc);
         on_malloc_error();
     }
     Header *new = header_get(new_table);
@@ -251,67 +217,33 @@ static Header *realloc_hashtable(Header *old) {
 void *hashtable_with_entry(void *hashtable, const void *key, const void *value, void **created_value) {
     Header *header = header_get(hashtable);
     if (load_factor(header) >= LOAD_FACTOR_THRESHOLD) {
-        if (NULL == (header = realloc_hashtable(header))) {
+        if (NULL == (header = hashtable_realloc(header))) {
             return NULL;
         }
     }
 
+    void *p = hashtable_put_ignore_load(header, key, value);
     if (NULL != created_value) {
-        *created_value = hashtable_put_ignore_load(header, key, value);
+        *created_value = p;
     }
 
     return header->data;
 }
 
-#define hashtable_put(ht, k, v)                     \
-({                                                  \
-    void *p_v;                                      \
-    (ht) = hashtable_with_entry(                    \
-        (ht),                                       \
-        (typeof_member(typeof(*(ht)), key)[]){k},   \
-        (typeof_member(typeof(*(ht)), value)[]){v}, \
-        &p_v                                        \
-    );                                              \
-    (typeof_member(typeof(*(ht)), value) *) p_v;    \
-})
-
-size_t int_hash(const void *p) {
-    // https://stackoverflow.com/a/12996028/17654649
-    int x = *(int *) p;
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = (x >> 16) ^ x;
-    return x;
+static size_t hashtable_first_used_index(const Header *header, size_t start) {
+    size_t i = start;
+    while (i < header->capacity && false == header->used[i]) {
+        i += 1;
+    }
+    return i;
 }
 
-int int_compare(const void *p1, const void *p2) {
-    int *i1 = (int *) p1, *i2 = (int *) p2;
-    return *i1 - *i2;
+size_t hashtable_begin(const void *hashtable) {
+    return hashtable_first_used_index(header_get_const(hashtable), 0);
 }
 
-pair_declare(int, int);
+size_t hashtable_end(const void *hashtable) { return header_get_const(hashtable)->capacity; }
 
-int main(void) {
-    Pair(int, int) *table = hashtable_of_type(Pair(int, int), int_hash, int_compare);
-
-    const size_t key_max = 20;
-
-    for (size_t i = 1; i <= key_max; i += 1) {
-        int *value = hashtable_put(table, i, i - 1);
-        *value += 1;
-    }
-    for (size_t i = 1; i <= key_max; i += 1) {
-        int *value = hashtable_at(table, i);
-        *value *= *value;
-    }
-    for (size_t i = 1; i <= key_max; i += 1) {
-        printf("[%zu] = %d\n", i, hashtable_get(table, i));
-    }
-
-    printf("size     = %zu\n", hashtable_size(table));
-    printf("capacity = %zu\n", hashtable_capacity(table));
-
-    hashtable_free(table);
-
-    return EXIT_SUCCESS;
+size_t hashtable_next(const void *hashtable, size_t i) {
+    return hashtable_first_used_index(header_get_const(hashtable), i + 1);
 }
