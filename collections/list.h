@@ -27,42 +27,45 @@ do {                                    \
     *(HeadPtrPtr) = NULL;               \
 } while (0)
 
-#define List_PushFront(HeadPtrPtr, Val)                 \
-do {                                                    \
-    __auto_type _v = (Val);                             \
-    typeof(*(HeadPtrPtr)) _newHead =                    \
-        CallChecked(calloc, (1, sizeof(*_newHead)));    \
-    *_newHead = (typeof(*_newHead)) {                   \
-        .Value = _v,                                    \
-        .Next = *(HeadPtrPtr)                           \
-    };                                                  \
-    *(HeadPtrPtr) = _newHead;                           \
+#define List_PushFront(HeadPtrPtr, Val)                     \
+do {                                                        \
+    __auto_type _head_ptr_ptr_push_front = (HeadPtrPtr);    \
+    __auto_type _v = (Val);                                 \
+    typeof(*_head_ptr_ptr_push_front) _newHead =            \
+        CallChecked(calloc, (1, sizeof(*_newHead)));        \
+    *_newHead = (typeof(*_newHead)) {                       \
+        .Value = _v,                                        \
+        .Next = *_head_ptr_ptr_push_front                   \
+    };                                                      \
+    *_head_ptr_ptr_push_front = _newHead;                   \
 } while (0)
 
-#define List_TryPopFront(HeadPtrPtr, ValuePtr)      \
-({                                                  \
-    bool _ok = false;                               \
-    if (NULL != *(HeadPtrPtr)) {                    \
-        *(ValuePtr) = (*(HeadPtrPtr))->Value;       \
-        __auto_type _next = (*(HeadPtrPtr))->Next;  \
-        free(*(HeadPtrPtr));                        \
-        *(HeadPtrPtr) = _next;                      \
-        _ok = true;                                 \
-    }                                               \
-    _ok;                                            \
+#define List_TryPopFront(HeadPtrPtr, ValuePtr)                      \
+({                                                                  \
+    __auto_type _head_ptr_ptr_try_pop_front = (HeadPtrPtr);         \
+    bool _ok = false;                                               \
+    if (NULL != *_head_ptr_ptr_try_pop_front) {                     \
+        *(ValuePtr) = (*_head_ptr_ptr_try_pop_front)->Value;        \
+        __auto_type _next = (*_head_ptr_ptr_try_pop_front)->Next;   \
+        free(*_head_ptr_ptr_try_pop_front);                         \
+        *_head_ptr_ptr_try_pop_front = _next;                       \
+        _ok = true;                                                 \
+    }                                                               \
+    _ok;                                                            \
 })
 
-#define List_PushBack(HeadPtrPtr, TailPtrPtr, Val)  \
-do {                                                \
-    if (NULL == *(HeadPtrPtr)) {                    \
-        List_PushFront((HeadPtrPtr), (Val));        \
-        *(TailPtrPtr) = *(HeadPtrPtr);              \
-    } else {                                        \
-        typeof(*(HeadPtrPtr)) _newTail = NULL;      \
-        List_PushFront(&_newTail, (Val));           \
-        (*(TailPtrPtr))->Next = _newTail;           \
-        *(TailPtrPtr) = _newTail;                   \
-    }                                               \
+#define List_PushBack(HeadPtrPtr, TailPtrPtr, Val)          \
+do {                                                        \
+    __auto_type _head_ptr_ptr_push_back = (HeadPtrPtr);     \
+    if (NULL == *_head_ptr_ptr_push_back) {                 \
+        List_PushFront(_head_ptr_ptr_push_back, (Val));     \
+        *(TailPtrPtr) = *_head_ptr_ptr_push_back;           \
+    } else {                                                \
+        typeof(*_head_ptr_ptr_push_back) _newTail = NULL;   \
+        List_PushFront(&_newTail, (Val));                   \
+        (*(TailPtrPtr))->Next = _newTail;                   \
+        *(TailPtrPtr) = _newTail;                           \
+    }                                                       \
 } while (0)
 
 #define LIST_TYPEOF_MEMBER(Type, Member)    typeof(((Type) {}).Member)
