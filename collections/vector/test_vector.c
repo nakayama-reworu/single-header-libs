@@ -104,21 +104,25 @@ test_fact(vector_pop_removes_and_returns_last_element) {
 }
 
 test_fact(vector_foreach_iterates_over_all_elements) {
-    int *v = vector_empty_of_type(int);
     const int elements[] = {1, 2, -3};
     const size_t elements_count = sizeof(elements) / sizeof(elements[0]);
+    int *v = vector_new_of_type(int, elements_count);
     int result[elements_count];
 
-    vector_append_range(v, elements, elements_count);
-
-    int *it = result;
+    const int *elements_it = elements;
     vector_foreach(v_it, v) {
+        *v_it = *elements_it;
+        elements_it++;
+    }
+    int *it = result;
+    vector_foreach(v_it, (const int *) v) {
         *it = *v_it;
         it++;
     }
+
     test_assert(
             0 == memcmp(result, elements, sizeof(elements)),
-            "expected elements iterated over to be the same as appended"
+            "expected elements iterated over to be the same as assigned"
     );
 
     vector_free(v);
