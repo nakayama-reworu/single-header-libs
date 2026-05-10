@@ -1,264 +1,305 @@
 #include "hashtable.h"
 
 #include "common/macros.h"
-#include "dynarray/dynarray.h"
+
+#include <string.h>
+#include <assert.h>
+
+#define LOAD_FACTOR_THRESHOLD   (0.5f)
+#define GROWTH_RATE             (2)
 
 
-typedef struct HashTableHeader {
-    void **Buckets;
-
+typedef struct HashTable {
     HashFunction Hash;
     HashTableComparator Compare;
 
-    size_t BucketsCount;
+    size_t TotalSlots;
+    size_t UsedSlots;
 
     size_t KeySize;
     size_t KeyOffset;
     size_t ValueSize;
     size_t ValueOffset;
-    size_t EntrySize;
-} HashTableHeader;
 
-#define IMPL_HASHTABLE_HEADER(table)    ((HashTableHeader *) (table) - 1)
-
-void *HashTable_New(
-        HashFunction hash,
-        HashTableComparator compare,
-        size_t buckets_count,
-        size_t key_size,
-        size_t key_offset,
-        size_t value_size,
-        size_t value_offset,
-        size_t entry_size
-) {
-    if (buckets_count <= HASHTABLE_MIN_BUCKETS_COUNT) {
-        LOG_ERROR("Buckets count must be at least %d", HASHTABLE_MIN_BUCKETS_COUNT);
-        return NULL;
-    }
-
-    LOG_DEBUG(
-            "buckets_count=%d, key_size=%d, key_offset=%d, value_size=%d, value_offset=%d",
-            (int) buckets_count, (int) key_size, (int) key_offset, (int) value_size, (int) value_offset
-    );
-    const size_t total_bytes = buckets_count * sizeof(void *) + sizeof(HashTableHeader);
-
-    HashTableHeader *header;
-    if (NULL == (header = calloc(total_bytes, 1))) {
-        perror(nameof_identifier(HashTable_New));
-        return NULL;
-    }
-
-
-    *header = (HashTableHeader) {
-            .Buckets = SHIFT(header, sizeof(HashTableHeader)),
-            .Hash = hash,
-            .Compare = compare,
-            .BucketsCount = buckets_count,
-            .KeySize = key_size,
-            .KeyOffset = key_offset,
-            .ValueSize = value_size,
-            .ValueOffset = value_offset,
-            .EntrySize= entry_size,
+    union {
+        size_t PresenceFlagOffset;
+        size_t KeyValueEntrySize;
     };
 
-    return header->Buckets;
+    size_t ExtendedEntrySize;
+
+    void *Slots;
+} HashTable;
+
+#define entry_get_key(table, entry)      advance_bytes((entry), (table)->KeyOffset)
+#define entry_get_value(table, entry)    advance_bytes((entry), (table)->ValueOffset)
+
+#define entry_get_occupied(table, entry) ((bool *) advance_bytes((entry), (table)->PresenceFlagOffset))
+#define entry_is_occupied(table, entry)  (*entry_get_occupied((table), (entry)))
+#define entry_is_free(table, entry)      (false == *entry_get_occupied((table), (entry)))
+
+static float load_factor(const HashTable *table) {
+    return (float) table->UsedSlots / (float) table->TotalSlots;
 }
 
-void *HashTable_PutEntries(
-        void *table,
-        const void *entries,
-        size_t entries_count
+static bool is_over_load_threshold(const HashTable *table) {
+    return load_factor(table) >= LOAD_FACTOR_THRESHOLD;
+}
+
+static size_t hashtable_entry_index(const HashTable *table, const void *p_key) {
+    return (size_t) table->Hash(p_key) % table->TotalSlots;
+}
+
+static void *hashtable_entry_at_index(const HashTable *table, size_t index) {
+    index = index % table->TotalSlots;
+    return advance_bytes(table->Slots, index * table->ExtendedEntrySize);
+}
+
+static void hashtable_set_entry(
+        HashTable *table,
+        void *entry,
+        const void *p_key,
+        const void *p_value
 ) {
-    if (NULL == table) {
-        LOG_NULL(table);
-        return NULL;
-    }
-
-    HashTableHeader *header = IMPL_HASHTABLE_HEADER(table);
-
-    for (size_t i = 0; i < entries_count; i++) {
-        if (NULL != HashTable_PutEntry(table, SHIFT(entries, i * header->EntrySize))) {
-            continue;
-        }
-
-        LOG_ERROR("Failed to add entry");
-        HashTable_Free(table, NULL);
-        return NULL;
-    }
-
-    return table;
-}
-
-void *HashTable_AtKey(void *table, const void *key) {
-    if (NULL == table) {
-        LOG_NULL(table);
-        return NULL;
-    }
-
-    void **buckets = table;
-    HashTableHeader *header = IMPL_HASHTABLE_HEADER(table);
-
-    const uint64_t hash = header->Hash(key);
-    void *bucket = buckets[hash % header->BucketsCount];
-
-    if (NULL == bucket) {
-        return NULL;
-    }
-
-    for (size_t i = 0; i < Array_Size(bucket); i++) {
-        void *entry = Array_At(bucket, i);
-        if (0 == header->Compare(SHIFT(entry, header->KeyOffset), key, header->KeySize)) {
-            return SHIFT(entry, header->ValueOffset);
-        }
-    }
-
-    return NULL;
-}
-
-
-void *HashTable_PutEntry(void *table, const void *entry) {
-    if (NULL == table) {
-        LOG_NULL(table);
-        return NULL;
-    }
-
-    void **buckets = table;
-    HashTableHeader *header = IMPL_HASHTABLE_HEADER(buckets);
-
-    const void *key = SHIFT(entry, header->KeyOffset);
-    const void *value = SHIFT(entry, header->ValueOffset);
-
-    void *existing_value;
-    if (NULL != (existing_value = HashTable_AtKey(buckets, key))) {
-        LOG_DEBUG("Found existing entry, overwriting value");
-        return memcpy(existing_value, value, header->ValueSize);
-    }
-
-    LOG_DEBUG("Creating new entry");
-
-    const size_t bucket_index = header->Hash(key) % header->BucketsCount;
-    void *bucket = buckets[bucket_index];
-
-    if (NULL == bucket) {
-        LOG_DEBUG("Creating new bucket");
-
-        if (NULL == (bucket = Array_New(0, header->EntrySize))) {
-            LOG_ERROR("Failed to allocate a bucket");
-            return NULL;
-        }
-    }
-
-    buckets[bucket_index] = bucket = Array_WithAppended(bucket, entry);
-    return SHIFT(Array_At(bucket, Array_Size(bucket) - 1), header->ValueOffset);
-}
-
-
-void HashTable_PrintStats(void *table) {
-    if (NULL == table) {
-        LOG_NULL(table);
+    memcpy(entry_get_value(table, entry), p_value, table->ValueSize);
+    if (*entry_get_occupied(table, entry)) {
+        LOG_DEBUG("Key existed");
         return;
     }
 
-    void **buckets = table;
-    HashTableHeader *header = IMPL_HASHTABLE_HEADER(table);
-
-    size_t used_buckets_count = 0;
-    size_t total_entries = 0;
-
-    int empty_begin = -1, empty_end = empty_begin;
-
-    printf("Total buckets: %d\n", (int) header->BucketsCount);
-
-    for (size_t i = 0; i < header->BucketsCount; i++) {
-        if (NULL == buckets[i]) {
-            if (-1 == empty_begin) {
-                empty_begin = empty_end = (int) i;
-            } else {
-                empty_end = (int) i;
-            }
-        } else {
-            if (empty_begin >= 0) {
-                if (empty_begin == empty_end) {
-                    printf("buckets[%d] = NULL\n", empty_begin);
-                } else {
-                    printf("buckets[%d..%d] = NULL\n", empty_begin, empty_end);
-                }
-
-                empty_begin = empty_end = -1;
-            }
-            used_buckets_count++;
-            total_entries += Array_Size(buckets[i]);
-            printf("buckets[%d] = Array{.Size=%d}\n", (int) i, (int) Array_Size(buckets[i]));
-        }
-    }
-
-    if (empty_begin >= 0) {
-        if (empty_begin == empty_end) {
-            printf("buckets[%d] = NULL\n", empty_begin);
-        } else {
-            printf("buckets[%d..%d] = NULL\n", empty_begin, empty_end);
-        }
-    }
-
-    printf("Buckets used: %d\n", (int) used_buckets_count);
-    printf("Total entries: %d\n", (int) total_entries);
+    memcpy(entry_get_key(table, entry), p_key, table->KeySize);
+    *entry_get_occupied(table, entry) = true;
+    table->UsedSlots += 1;
+    LOG_DEBUG("Inserted new key");
 }
 
+static void hashtable_put_ignore_load(HashTable *table, const void *p_key, const void *p_value) {
+    assert(NULL != table);
+    assert(NULL != p_key);
+    assert(NULL != p_value);
 
-void HashTable_Free(void *table, HashTableEntryDestructor free_entry) {
-    if (NULL == table) {
-        LOG_NULL(table);
-        return;
-    }
-    void **buckets = table;
-    HashTableHeader *header = IMPL_HASHTABLE_HEADER(buckets);
+    assert(!is_over_load_threshold(table));
 
-    for (size_t i = 0; i < header->BucketsCount; i++) {
-        void *bucket = buckets[i];
-        if (NULL == bucket) {
-            continue;
+    const size_t base_index = hashtable_entry_index(table, p_key);
+
+    void *entry = hashtable_entry_at_index(table, base_index);
+    size_t offset = 0;
+    for (; offset < table->TotalSlots; offset++, entry = hashtable_entry_at_index(table, base_index + offset)) {
+        if (entry_is_free(table, entry)) {
+            LOG_DEBUG("Found empty slot");
+            break;
         }
-        Array_Free(bucket, free_entry);
-    }
 
-    free(header);
-}
-
-
-size_t HashTable_FindNextUsedBucket(size_t current_bucket_index, void **buckets) {
-    const HashTableHeader *table = IMPL_HASHTABLE_HEADER(buckets);
-    for (; current_bucket_index < table->BucketsCount; current_bucket_index++) {
-        if (NULL != buckets[current_bucket_index]) {
+        if (0 == table->Compare(entry_get_key(table, entry), p_key)) {
+            LOG_DEBUG("Found existing slot with the same key");
             break;
         }
     }
 
-    return current_bucket_index;
+    hashtable_set_entry(table, entry, p_key, p_value);
+
+    LOG_DEBUG(
+            "Placed entry with hash %d to %d, slots_used=%d, load_factor=%.2lf",
+            (int) base_index, (int) (base_index + offset), (int) table->UsedSlots, load_factor(table)
+    );
 }
 
+static void *hashtable_replace_with_larger(HashTable *old_table) {
+    const size_t new_slots_count = GROWTH_RATE * old_table->TotalSlots;
+    const size_t total_size = old_table->ExtendedEntrySize * new_slots_count + sizeof(HashTable);
 
-HashTableIterator HashTable_BeginEntries(void *table) {
+    HashTable *table = (HashTable *) calloc(1, total_size);
+    if (NULL == table) {
+        perror(nameof_identifier(hashtable_replace_with_larger));
+        return NULL;
+    }
+
+    *table = *old_table;
+    table->UsedSlots = 0;
+    table->TotalSlots = new_slots_count;
+    table->Slots = advance_bytes(table, sizeof(HashTable));
+
+    LOG_DEBUG("Increased capacity from %d to %d", (int) old_table->TotalSlots, (int) table->TotalSlots);
+
+    for (size_t i = 0; i < old_table->TotalSlots; i++) {
+        void *old_entry = hashtable_entry_at_index(old_table, i);
+        if (entry_is_free(old_table, old_entry)) {
+            continue;
+        }
+
+        hashtable_put_ignore_load(
+                table,
+                entry_get_key(old_table, old_entry),
+                entry_get_value(old_table, old_entry)
+        );
+    }
+    free(old_table);
+
+
+    return table;
+}
+
+static void *hashtable_entry_at_key(const HashTable *table, const void *p_key) {
+    assert(NULL != table);
+    assert(NULL != p_key);
+
+    const size_t base_index = hashtable_entry_index(table, p_key);
+
+    for (size_t offset = 0; offset < table->TotalSlots; offset++) {
+        void *entry = hashtable_entry_at_index(table, base_index + offset);
+        if (entry_is_free(table, entry)) {
+            LOG_DEBUG("Found empty slot, key{hash=%d} does not exist", (int) base_index);
+            return NULL;
+        }
+
+        if (0 == table->Compare(entry_get_key(table, entry), p_key)) {
+            LOG_DEBUG("Located entry with key{hash=%d} at %d", (int) base_index, (int) (base_index + offset));
+            return entry;
+        }
+    }
+
+    LOG_DEBUG("key{hash=%d} does not exist", (int) base_index);
+    return NULL;
+}
+
+void *hashtable_new(
+        HashFunction hash,
+        HashTableComparator compare,
+        size_t slots_count,
+        size_t key_size,
+        size_t key_offset,
+        size_t value_size,
+        size_t value_offset,
+        size_t entry_size,
+        size_t entry_alignment
+) {
+    const size_t total_entry_size = entry_size + entry_alignment;
+    const size_t total_size = slots_count * total_entry_size + sizeof(HashTable);
+    HashTable *table = (HashTable *) calloc(1, total_size);
+    if (NULL == table) {
+        perror(nameof_identifier(hashtable_new));
+        return NULL;
+    }
+
+    *table = (HashTable) {
+            hash, compare,
+            .TotalSlots = slots_count,
+            .UsedSlots = 0,
+            .KeySize = key_size, .KeyOffset = key_offset,
+            .ValueSize = value_size, .ValueOffset = value_offset,
+            .PresenceFlagOffset = entry_size,
+            .ExtendedEntrySize = total_entry_size,
+            .Slots = advance_bytes(table, sizeof(HashTable))
+    };
+
+    return table;
+}
+
+void hashtable_free(void *t, HashTableEntryDestructor free_entry) {
+    HashTable *table = t;
+
+    if (NULL != free_entry) {
+        for (size_t i = 0; i < table->TotalSlots; i++) {
+            void *entry = hashtable_entry_at_index(table, i);
+            if (entry_is_free(table, entry)) {
+                continue;
+            }
+
+            free_entry(entry);
+        }
+    }
+
+    free(table);
+}
+
+void *hashtable_value_at(const void *t, const void *key) {
+    if (NULL == t) {
+        LOG_NULL(t);
+        return NULL;
+    }
+    if (NULL == key) {
+        LOG_NULL(key);
+        return NULL;
+    }
+
+    const HashTable *table = t;
+    void *entry = hashtable_entry_at_key(table, key);
+    if (NULL == entry) {
+        return NULL;
+    }
+
+    return entry_get_value(table, entry);
+}
+
+void *hashtable_put_entry(void *t, const void *entry) {
+    if (NULL == t) {
+        LOG_NULL(t);
+        return NULL;
+    }
+    if (NULL == entry) {
+        LOG_NULL(entry);
+        return NULL;
+    }
+
+    HashTable *table = t;
+    if (is_over_load_threshold(table)) {
+        LOG_DEBUG("Exceeded load threshold, allocating more memory");
+
+        if (NULL == (table = hashtable_replace_with_larger(table))) {
+            LOG_ERROR("Could not increase table size");
+            return NULL;
+        }
+    }
+
+    hashtable_put_ignore_load(table, entry_get_key(table, entry), entry_get_value(table, entry));
+
+    return table;
+}
+
+static size_t hashtable_next_used_slot_index(const HashTable *table, size_t base_index) {
+    for (size_t index = base_index; index < table->TotalSlots; index++) {
+        void *entry = hashtable_entry_at_index(table, index);
+        if (entry_is_occupied(table, entry)) {
+            return index;
+        }
+    }
+
+    return table->TotalSlots;
+}
+
+size_t hashtable_size(const void *t) {
+    const HashTable *table = t;
+    return table->UsedSlots;
+}
+
+HashTableIterator hashtable_begin(const void *t) {
+    const HashTable *table = t;
     return (HashTableIterator) {
-            ._table = IMPL_HASHTABLE_HEADER(table),
-            .BucketIndex = HashTable_FindNextUsedBucket(0, table),
-            .EntryIndex = 0,
+            ._i =  hashtable_next_used_slot_index(table, 0)
     };
 }
 
-
-bool HashTable_HasMoreEntries(const HashTableIterator it) {
-    return it.BucketIndex < it._table->BucketsCount;
+bool hashtable_end(const void *t, HashTableIterator it) {
+    const HashTable *table = t;
+    return it._i >= table->TotalSlots;
 }
 
+void hashtable_next(const void *t, HashTableIterator *it) {
+    const HashTable *table = t;
+    it->_i = hashtable_next_used_slot_index(table, it->_i + 1);
+}
 
-void HashTable_NextEntry(HashTableIterator *it) {
-    void **buckets = it->_table->Buckets;
-    if (it->EntryIndex + 1 < Array_Size(it->_table->Buckets[it->BucketIndex])) {
-        it->EntryIndex++;
+const void *hashtable_get_entry(const void *t, HashTableIterator it) {
+    const HashTable *table = t;
+    return hashtable_end(table, it) ? NULL : hashtable_entry_at_index(table, it._i);
+}
+
+void hashtable_copy_entry(const void *t, HashTableIterator it, void *dst) {
+    const HashTable *table = t;
+    const void *entry = hashtable_get_entry(table, it);
+    if (NULL == entry) {
         return;
     }
 
-    it->BucketIndex = HashTable_FindNextUsedBucket(it->BucketIndex + 1, buckets);
-    it->EntryIndex = 0;
+    memcpy(dst, entry, table->KeyValueEntrySize);
 }
-

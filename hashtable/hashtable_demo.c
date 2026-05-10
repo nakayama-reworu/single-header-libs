@@ -1,4 +1,3 @@
-#include "dynarray/dynarray.h"
 #include "hashtable/hashtable.h"
 
 #include <stdlib.h>
@@ -8,66 +7,51 @@
 DeclarePair(int, int);
 
 
-uint64_t IntHash(const void *p) {
+size_t int_hash(const void *p) {
     return *(int *) p;
 }
 
-
-void PrintIntIntPair(void *p) {
-    Pair(int, int) *pair = p;
-    printf("Pair{.Key=%d, .Value=%d}\n", pair->Key, pair->Value);
+int int_cmp(const void *p1, const void *p2) {
+    int *i1 = (int *) p1, *i2 = (int *) p2;
+    return *i1 - *i2;
 }
 
 
-int CompareByValueDescending(const void *addr1, const void *addr2) {
-    const Pair(int, int) *p1 = addr1, *p2 = addr2;
-
-    return p2->Value - p1->Value;
+void int_int_pair_print(Pair(int, int) pair) {
+    printf("Pair{.Key=%d, .Value=%d}\n", pair.Key, pair.Value);
 }
 
 
 int main(void) {
+    Pair(int, int) *t = hashtable(typeof(*t), int_hash, int_cmp);
+
     srand(0); // NOLINT
-    int *numbers = Array_EmptyOfType(typeof(*numbers));
-    for (size_t i = 0; i < 100; i++) {
-        Array_Append(numbers, rand() % 16); // NOLINT
-    }
+    const size_t total_numbers = 1000;
+    const int max = 100;
 
-    Pair(int, int) **frequencies = HashTable(typeof(**frequencies), IntHash, memcmp);
-    HashTable_ForEach(_, frequencies) {
-        LOG_ERROR("This must never be reached");
-    }
-
-    Array_ForEach(n, numbers)  {
-        int *count;
-        if (NULL == (count = HashTable_At(frequencies, n))) {
-            count = HashTable_Put(frequencies, n, 1);
+    for (size_t i = 0; i < total_numbers; i++) {
+        const int n = rand() % max; // NOLINT
+        int *count = hashtable_at(t, n);
+        if (NULL == count) {
+            hashtable_put(t, n, 1);
         } else {
-            *count = *count + 1;
+            *count += 1;
         }
     }
 
-    Pair(int, int) *pairs = Array_EmptyOfType(typeof(*pairs));
-
-    size_t total_count = 0;
-    HashTable_ForEach(pair, frequencies) {
-        Array_Append(pairs, pair);
+    printf("size=%d\n", (int) hashtable_size(t));
+    size_t n = 0;
+    hashtable_foreach(p, t) {
+        n += p.Value;
     }
-    HashTable_ForEach(pair, frequencies) {
-        total_count += pair.Value;
+    hashtable_foreach(p, t) {
+        int_int_pair_print(p);
     }
-    assert(total_count == Array_Size(numbers));
+    if (total_numbers != n) {
+        LOG_ERROR("Total count is different from expected");
+    }
 
-    qsort(pairs, Array_Size(pairs), sizeof(*pairs), CompareByValueDescending);
-
-    Array_ForEachElement(pairs, PrintIntIntPair);
-
-    HashTable_PrintStats(frequencies);
-
-    HashTable_Free(frequencies, NULL);
-
-    Array_Free(pairs, NULL);
-    Array_Free(numbers, NULL);
+    hashtable_free(t, NULL);
 
     return EXIT_SUCCESS;
 }
