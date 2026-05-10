@@ -4,24 +4,27 @@
 #error Please include call_checked.h
 #endif
 
-#define LIST_EMPTY  (NULL)
-
-#ifndef CONCAT
-#define CONCAT_(A, B)   A ## B
-#define CONCAT(A, B)    CONCAT_(A, B)
+#ifndef LIST_CONCAT
+#define LIST_CONCAT_(A, B)   A ## B
+#define LIST_CONCAT(A, B)    LIST_CONCAT_(A, B)
 #endif
 
-#define List_Of(TValue) struct CONCAT(List_, __LINE__) { TValue Value; struct CONCAT(List_, __LINE__) *Next; }
+#define List_Of(TValue)                         \
+struct LIST_CONCAT(List_, __LINE__) {           \
+    TValue Value;                               \
+    struct LIST_CONCAT(List_, __LINE__) *Next;  \
+}
 
-#define List_Free(HeadPtr)          \
-do {                                \
-    __auto_type _next = (HeadPtr);  \
-    __auto_type _it = _next;        \
-    while (NULL != _it) {           \
-        _next = _it->Next;          \
-        free(_it);                  \
-        _it = _next;                \
-    }                               \
+#define List_Free(HeadPtrPtr)           \
+do {                                    \
+    __auto_type _next = *(HeadPtrPtr);  \
+    __auto_type _it = _next;            \
+    while (NULL != _it) {               \
+        _next = _it->Next;              \
+        free(_it);                      \
+        _it = _next;                    \
+    }                                   \
+    *(HeadPtrPtr) = NULL;               \
 } while (0)
 
 #define List_PushFront(HeadPtrPtr, Val)                 \
@@ -62,21 +65,21 @@ do {                                                \
     }                                               \
 } while (0)
 
-#define TYPEOF_MEMBER(Type, Member)    typeof(((Type) {}).Member)
+#define LIST_TYPEOF_MEMBER(Type, Member)    typeof(((Type) {}).Member)
 
-#define List_ForEach(ValuePtr, HeadPtr)                                 \
-__auto_type CONCAT(_it_, __LINE__) = (HeadPtr);                         \
-for (                                                                   \
-    TYPEOF_MEMBER(typeof(*CONCAT(_it_, __LINE__)), Value) *ValuePtr =   \
-        NULL != CONCAT(_it_, __LINE__)                                  \
-            ? &CONCAT(_it_, __LINE__)->Value                            \
-            : NULL;                                                     \
-    NULL != CONCAT(_it_, __LINE__);                                     \
-    CONCAT(_it_, __LINE__) = CONCAT(_it_, __LINE__)->Next,              \
-    ValuePtr =                                                          \
-        NULL != CONCAT(_it_, __LINE__)                                  \
-            ? &CONCAT(_it_, __LINE__)->Value                            \
-            : NULL                                                      \
+#define List_ForEach(ValuePtr, HeadPtr)                                         \
+__auto_type LIST_CONCAT(_it_, __LINE__) = (HeadPtr);                            \
+for (                                                                           \
+    LIST_TYPEOF_MEMBER(typeof(*LIST_CONCAT(_it_, __LINE__)), Value) *ValuePtr = \
+        NULL != LIST_CONCAT(_it_, __LINE__)                                     \
+            ? &LIST_CONCAT(_it_, __LINE__)->Value                               \
+            : NULL;                                                             \
+    NULL != LIST_CONCAT(_it_, __LINE__);                                        \
+    LIST_CONCAT(_it_, __LINE__) = LIST_CONCAT(_it_, __LINE__)->Next,            \
+    ValuePtr =                                                                  \
+        NULL != LIST_CONCAT(_it_, __LINE__)                                     \
+            ? &LIST_CONCAT(_it_, __LINE__)->Value                               \
+            : NULL                                                              \
 )
 
 #define List_Tail(HeadPtr)                          \
