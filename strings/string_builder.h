@@ -1,5 +1,5 @@
-#ifndef STRING_BUILDER
-#define STRING_BUILDER
+#ifndef STRING_BUILDER_H
+#define STRING_BUILDER_H
 
 #include <stdlib.h>
 #include <assert.h>
@@ -23,7 +23,7 @@ void StringBuilder_AppendChars(StringBuilder builder[static 1], size_t count, ch
 
 char *StringBuilder_ToCStr(StringBuilder builder);
 
-#endif // STRING_BUILDER
+#endif // STRING_BUILDER_H
 
 #ifdef STRING_BUILDER_IMPLEMENTATION
 

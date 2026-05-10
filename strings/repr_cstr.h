@@ -1,5 +1,5 @@
-#ifndef REPR_CSTR
-#define REPR_CSTR
+#ifndef REPR_CSTR_H
+#define REPR_CSTR_H
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -10,7 +10,7 @@ bool CStr_ReprToString(char *dst, size_t dstCapacity, char const *str);
 
 void CStr_ReprToFile(FILE file[static 1], char const *str);
 
-#endif // REPR_CSTR
+#endif // REPR_CSTR_H
 
 #ifdef REPR_CSTR_IMPLEMENTATION
 
