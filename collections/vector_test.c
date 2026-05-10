@@ -171,6 +171,14 @@ Testing_Fact(TryPopBack_returns_elements_in_reverse_order) {
     Vector_Free(&sut);
 }
 
+Testing_Fact(Reverse_handles_empty_vectors) {
+    IntVector sut = Vector_Empty(IntVector);
+
+    Vector_Reverse(&sut);
+
+    Testing_Assert(0 == sut.Size, "");
+}
+
 Testing_Fact(Reverse_reverses_order_of_elements) {
     IntVector sut = Vector_Of(IntVector, 1, 2, 3, 4, 5, 6);
     int const nums[] = {6, 5, 4, 3, 2, 1};
@@ -272,6 +280,7 @@ Testing_AllTests = {
         Testing_AddTest(TryPopBack_returns_false_for_empty_vector),
         Testing_AddTest(TryPopBack_discards_elements_if_ValuePtr_is_NULL),
         Testing_AddTest(TryPopBack_returns_elements_in_reverse_order),
+        Testing_AddTest(Reverse_handles_empty_vectors),
         Testing_AddTest(Reverse_reverses_order_of_elements),
         Testing_AddTest(IsEmpty_returns_true_for_empty_vector),
         Testing_AddTest(IsEmpty_returns_false_for_non_empty),

@@ -79,8 +79,6 @@ do {                                                                    \
 do {                                                                        \
     __auto_type _vecPtr_pushBack = (VecPtr);                                \
     if (_vecPtr_pushBack->Size >= _vecPtr_pushBack->Capacity) {             \
-        _vecPtr_pushBack->Capacity =                                        \
-            3 * _vecPtr_pushBack->Capacity / 2 + 1;                         \
         Vector_Reserve(                                                     \
             _vecPtr_pushBack,                                               \
             3 * _vecPtr_pushBack->Capacity / 2 + 1                          \
@@ -108,6 +106,9 @@ do {                                                                        \
 #define Vector_Reverse(VecPtr)                                                      \
 do {                                                                                \
     __auto_type _vecPtr_reverse = (VecPtr);                                         \
+    if (NULL == _vecPtr_reverse->Items) {                                           \
+        break;                                                                      \
+    }                                                                               \
     __auto_type _low_reverse = _vecPtr_reverse->Items;                              \
     __auto_type _high_reverse = _vecPtr_reverse->Items + _vecPtr_reverse->Size - 1; \
     while (_low_reverse < _high_reverse) {                                          \
