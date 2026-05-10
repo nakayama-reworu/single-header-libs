@@ -111,6 +111,55 @@ Testing_Fact(ForEach_iterates_over_all_elements) {
     Vector_Free(&sut);
 }
 
+Testing_Fact(At_returns_pointer_to_element_for_valid_non_negative_index) {
+    Vector_Of(int) sut = {0};
+
+    int const elements[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+    size_t const elementsCount = sizeof(elements) / sizeof(elements[0]);
+    for (size_t i = 0; i < elementsCount; i++) {
+        Vector_PushBack(&sut, elements[i]);
+    }
+
+    for (size_t i = 0; i < sut.Size; i++) {
+        int const *valuePtr = Vector_At(sut, i);
+        Testing_Assert(&sut.Items[i] == valuePtr, "At returned wrong pointer");
+    }
+
+    Vector_Free(&sut);
+}
+
+Testing_Fact(At_returns_pointer_to_element_for_valid_negative_index) {
+    Vector_Of(int) sut = {0};
+
+    int const elements[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+    size_t const elementsCount = sizeof(elements) / sizeof(elements[0]);
+    for (size_t i = 0; i < elementsCount; i++) {
+        Vector_PushBack(&sut, elements[i]);
+    }
+
+    for (int i = 1; i <= (int) sut.Size; i++) {
+        int const *valuePtr = Vector_At(sut, -i);
+        Testing_Assert(&sut.Items[sut.Size - i] == valuePtr, "At returned wrong pointer");
+    }
+
+    Vector_Free(&sut);
+}
+
+Testing_Fact(At_returns_NULL_for_invalid_indices) {
+    Vector_Of(int) sut = {0};
+
+    int const elements[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+    size_t const elementsCount = sizeof(elements) / sizeof(elements[0]);
+    for (size_t i = 0; i < elementsCount; i++) {
+        Vector_PushBack(&sut, elements[i]);
+    }
+
+    Testing_Assert(NULL == Vector_At(sut, sut.Size), "expected At to return NULL");
+    Testing_Assert(NULL == Vector_At(sut, -(int) sut.Size - 1), "expected At to return NULL");
+
+    Vector_Free(&sut);
+}
+
 Testing_AllTests = {
         Testing_AddTest(empty_vector_has_size_and_capacity_of_0),
         Testing_AddTest(PushBack_appends_elements),
@@ -119,6 +168,9 @@ Testing_AllTests = {
         Testing_AddTest(TryPopBack_returns_elements_in_reverse_order),
         Testing_AddTest(ForEach_never_executes_body_for_empty_list),
         Testing_AddTest(ForEach_iterates_over_all_elements),
+        Testing_AddTest(At_returns_pointer_to_element_for_valid_non_negative_index),
+        Testing_AddTest(At_returns_pointer_to_element_for_valid_negative_index),
+        Testing_AddTest(At_returns_NULL_for_invalid_indices),
 };
 
 Testing_RunAllTests();

@@ -45,6 +45,8 @@ while (Vector_TryPopBack(&words, &word)) {
     printf("%s\n", word);
 }
 
+printf("last=%s\n", *Vector_At(words, -1));
+
 Vector_Free(&words);
 ```
 
