@@ -28,7 +28,7 @@ void *Array_New(const size_t size, const size_t element_size_bytes) {
             .Capacity = capacity,
     };
 
-    return SHIFT(header, sizeof(ArrayHeader));
+    return advance_bytes(header, sizeof(ArrayHeader));
 }
 
 
@@ -177,7 +177,7 @@ void *Array_ExtendWithValues(
     for (size_t i = 0; i < elements_count; i++) {
         memcpy(
                 Array_At(array, original_size + i),
-                SHIFT(data, i * element_size),
+                advance_bytes(data, i * element_size),
                 Array_ElementSize(array)
         );
     }

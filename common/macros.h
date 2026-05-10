@@ -43,10 +43,7 @@ do {                                                    \
 #define array_literal_sized(...) \
     array_literal(__VA_ARGS__), array_literal_size(__VA_ARGS__)
 
-#define array_literal_of_type_sized(type, ...) \
-    array_literal_of_type(type, __VA_ARGS__), array_literal_size(__VA_ARGS__)
-
-#define SHIFT(Ptr, OffsetBytes) ((void *) ((uint8_t *) Ptr + (OffsetBytes)))
+#define advance_bytes(Ptr, OffsetBytes) ((void *) ((uint8_t *) Ptr + (OffsetBytes)))
 
 #define typeof_member(Type, MemberName) typeof(((Type){0}).MemberName)
 #define sizeof_member(Type, MemberName) sizeof(((Type){0}).MemberName)

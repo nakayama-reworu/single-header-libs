@@ -30,7 +30,7 @@ size_t Array_Capacity(const void *array);
 
 void *Array_ReserveToFit(void *array, size_t size);
 
-#define Array_At(array, index)  SHIFT((array), (index) * Array_ElementSize(array))
+#define Array_At(array, index)  advance_bytes((array), (index) * Array_ElementSize(array))
 
 void *Array_WithAppended(void *array, const void *element);
 
