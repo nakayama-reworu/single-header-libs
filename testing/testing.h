@@ -51,7 +51,7 @@ do {                                                                            
 
 #define test_all_tests static const TestCase tests[]
 
-#define test_run_all_tests(...)                                 \
+#define test_run_all_tests()                                    \
 int main(void) {                                                \
     const size_t tests_count = sizeof(tests) / sizeof(*tests);  \
     size_t failed = 0;                                          \
