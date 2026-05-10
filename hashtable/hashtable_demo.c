@@ -2,7 +2,6 @@
 #include "hashtable/hashtable.h"
 
 #include <stdlib.h>
-#include <stdint.h>
 #include <stddef.h>
 
 
@@ -46,11 +45,12 @@ int main(void) {
 
     Pair(int, int) *pairs = Array_EmptyOfType(typeof(*pairs));
 
-    for (HashTableIterator it = HashTable_BeginEntries(frequencies);
-         HashTable_HasMoreEntries(it);
-         HashTable_NextEntry(&it)) {
-        Array_Append(pairs, HashTable_Entry(frequencies, it));
+    size_t total_count = 0;
+    HashTable_ForEach(pair, frequencies) {
+        Array_Append(pairs, pair);
+        total_count += pair.Value;
     }
+    assert(total_count == Array_Size(numbers));
 
     qsort(pairs, Array_Size(pairs), sizeof(*pairs), CompareByValueDescending);
 

@@ -104,4 +104,20 @@ void HashTable_NextEntry(HashTableIterator *it);
 
 #define HashTable_Entry(table, iterator)    (table)[(iterator).BucketIndex][(iterator).EntryIndex]
 
+#define HashTable_ForEach(entry_name, table)                                \
+typeof(**table) entry_name;                                                 \
+HashTableIterator _it = HashTable_BeginEntries(table);                      \
+if (HashTable_HasMoreEntries(_it)) {                                        \
+    entry_name = HashTable_Entry(table, _it);                               \
+}                                                                           \
+for (                                                                       \
+    ;                                                                       \
+    HashTable_HasMoreEntries(_it);                                          \
+    HashTable_NextEntry(&_it),                                              \
+    (HashTable_HasMoreEntries(_it)                                          \
+        ? (entry_name = HashTable_Entry(table, _it))                        \
+        : entry_name)                                                       \
+)
+
+
 #endif //PLAYGROUND_HASHTABLE_H
