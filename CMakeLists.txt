@@ -3,9 +3,18 @@ project(single-header-libs)
 
 set(CMAKE_C_STANDARD 11)
 
+set(STRING_BUILDER_TEST_NAME ${PROJECT_NAME}-string-builder)
+add_executable(${STRING_BUILDER_TEST_NAME}
+        strings/string_builder_test.c)
+target_link_libraries(${STRING_BUILDER_TEST_NAME} m)
+target_compile_options(${STRING_BUILDER_TEST_NAME} PRIVATE -Wall -Werror -Wextra -Wpointer-arith)
+target_include_directories(${STRING_BUILDER_TEST_NAME} PRIVATE ${CMAKE_SOURCE_DIR})
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(${STRING_BUILDER_TEST_NAME} PRIVATE DEBUG)
+endif()
+
 set(REPR_STRING_TEST_NAME ${PROJECT_NAME}-repr-string)
 add_executable(${REPR_STRING_TEST_NAME}
-        strings/repr_string.c
         strings/repr_string_test.c)
 target_link_libraries(${REPR_STRING_TEST_NAME} m)
 target_compile_options(${REPR_STRING_TEST_NAME} PRIVATE -Wall -Werror -Wextra -Wpointer-arith)

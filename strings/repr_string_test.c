@@ -1,7 +1,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "repr_string.h"
+#define REPR_CSTR_IMPLEMENTATION
+#include "repr_cstr.h"
 
 #include "testing/testing.h"
 

@@ -1,11 +1,42 @@
-#include "repr_string.h"
+#ifndef REPR_CSTR
+#define REPR_CSTR
+
+#include <stdio.h>
+#include <stdbool.h>
+
+int CStr_ReprSize(char const *str);
+
+bool CStr_ReprToString(char *dst, size_t dstCapacity, char const *str);
+
+void CStr_ReprToFile(FILE file[static 1], char const *str);
+
+#endif // REPR_CSTR
+
+#ifdef REPR_CSTR_IMPLEMENTATION
 
 #include <ctype.h>
+#include <string.h>
+#include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-#include "call_checked.h"
+#define REPR_CSTR_CallChecked(Callee, ArgsList) \
+({                                              \
+    errno = 0;                                  \
+    __auto_type _r = Callee ArgsList;           \
+    if (errno) {                                \
+        fprintf(                                \
+            stderr, "[%s:%d] %s%s: %s\n",       \
+            __FILE_NAME__, __LINE__,            \
+            #Callee, #ArgsList,                 \
+            strerror(errno)                     \
+        );                                      \
+        exit(EXIT_FAILURE);                     \
+    }                                           \
+    _r;                                         \
+})
 
-char const *ESCAPE_SEQUENCES[256] = {
+char const *REPR_CSTR_ESCAPE_SEQUENCES[256] = {
         ['\a'] = "\\a",
         ['\b'] = "\\b",
         ['\f'] = "\\f",
@@ -27,7 +58,7 @@ int CStr_ReprSize(char const *str) {
 
     for (unsigned char c = *str; '\0' != *str; str++, c = *str) {
         char const *escapeSequence;
-        if (NULL != (escapeSequence = ESCAPE_SEQUENCES[c])) {
+        if (NULL != (escapeSequence = REPR_CSTR_ESCAPE_SEQUENCES[c])) {
             if ((charSize = snprintf(NULL, 0, "%s", escapeSequence)) < 0) {
                 return charSize;
             }
@@ -49,9 +80,9 @@ int CStr_ReprSize(char const *str) {
     return size;
 }
 
-#define MIN_CAPACITY ((size_t) 3)
+#define REPR_CSTR_MIN_CAPACITY ((size_t) 3)
 
-#define SnprintfShiftChecked(DstPtr, SizePtr, Format, ...)                  \
+#define REPR_CSTR_SnprintfShiftChecked(DstPtr, SizePtr, Format, ...)        \
 ({                                                                          \
     int _printed = snprintf(*(DstPtr), *(SizePtr), Format, ##__VA_ARGS__);  \
     bool _ok = false;                                                       \
@@ -64,35 +95,35 @@ int CStr_ReprSize(char const *str) {
 })
 
 bool CStr_ReprToString(char *dst, size_t dstCapacity, char const *str) {
-    if (NULL == dst || NULL == str || dstCapacity < MIN_CAPACITY) {
+    if (NULL == dst || NULL == str || dstCapacity < REPR_CSTR_MIN_CAPACITY) {
         return false;
     }
 
-    if (false == SnprintfShiftChecked(&dst, &dstCapacity, "\"")) {
+    if (false == REPR_CSTR_SnprintfShiftChecked(&dst, &dstCapacity, "\"")) {
         return false;
     }
 
     for (unsigned char c = *str; '\0' != *str; str++, c = *str) {
-        if (NULL != ESCAPE_SEQUENCES[c]) {
-            if (false == SnprintfShiftChecked(&dst, &dstCapacity, "%s", ESCAPE_SEQUENCES[c])) {
+        if (NULL != REPR_CSTR_ESCAPE_SEQUENCES[c]) {
+            if (false == REPR_CSTR_SnprintfShiftChecked(&dst, &dstCapacity, "%s", REPR_CSTR_ESCAPE_SEQUENCES[c])) {
                 return false;
             }
             continue;
         }
 
         if (isprint(c)) {
-            if (false == SnprintfShiftChecked(&dst, &dstCapacity, "%c", c)) {
+            if (false == REPR_CSTR_SnprintfShiftChecked(&dst, &dstCapacity, "%c", c)) {
                 return false;
             }
             continue;
         }
 
-        if (false == SnprintfShiftChecked(&dst, &dstCapacity, "\\x%02hhx", c)) {
+        if (false == REPR_CSTR_SnprintfShiftChecked(&dst, &dstCapacity, "\\x%02hhx", c)) {
             return false;
         }
     }
 
-    return SnprintfShiftChecked(&dst, &dstCapacity, "\"");
+    return REPR_CSTR_SnprintfShiftChecked(&dst, &dstCapacity, "\"");
 }
 
 void CStr_ReprToFile(FILE file[static 1], char const *str) {
@@ -100,22 +131,24 @@ void CStr_ReprToFile(FILE file[static 1], char const *str) {
         return;
     }
 
-    CallChecked(fprintf, (file, "\""));
+    REPR_CSTR_CallChecked(fprintf, (file, "\""));
 
     for (unsigned char c = *str; '\0' != *str; str++, c = *str) {
         char const *escapeSequence;
-        if (NULL != (escapeSequence = ESCAPE_SEQUENCES[c])) {
-            CallChecked(fprintf, (file, "%s", escapeSequence));
+        if (NULL != (escapeSequence = REPR_CSTR_ESCAPE_SEQUENCES[c])) {
+            REPR_CSTR_CallChecked(fprintf, (file, "%s", escapeSequence));
             continue;
         }
 
         if (isprint(c)) {
-            CallChecked(fputc, (c, file));
+            REPR_CSTR_CallChecked(fputc, (c, file));
             continue;
         }
 
-        CallChecked(fprintf, (file, "\\x%02hhx", c));
+        REPR_CSTR_CallChecked(fprintf, (file, "\\x%02hhx", c));
     }
 
-    CallChecked(fprintf, (file, "\""));
+    REPR_CSTR_CallChecked(fprintf, (file, "\""));
 }
+
+#endif // REPR_CSTR_IMPLEMENTATION
