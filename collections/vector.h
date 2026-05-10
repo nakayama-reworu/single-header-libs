@@ -38,9 +38,13 @@ struct {                \
     VectorType _vec_fromArray = Vector_Empty(VectorType);   \
     typeof(*_vec_fromArray.Items) *_arr = (Ptr);            \
     size_t const _count = (Count);                          \
-    for (size_t _i = 0; _i < _count; _i++) {                \
-        Vector_PushBack(&_vec_fromArray, _arr[_i]);         \
-    }                                                       \
+    Vector_Reserve(&_vec_fromArray, _count);                \
+    _vec_fromArray.Size = _count;                           \
+    memcpy(                                                 \
+        _vec_fromArray.Items,                               \
+        _arr,                                               \
+        sizeof(*_vec_fromArray.Items) * _count              \
+    );                                                      \
     _vec_fromArray;                                         \
 })
 
