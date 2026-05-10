@@ -36,7 +36,9 @@ return `true` if vector contains elements, and `false` otherwise;
  * `Vector_ForEach(ValuePtr, Vec)` - generates a `for` header to
  iterate over vector elements;
  * `Vector_Empty(Vec) -> bool` - `true` iff vector is empty;
- * `Vector_Clear(VecPtr)` - set `Size` to `0`.
+ * `Vector_Clear(VecPtr)` - set `Size` to `0`;
+ * `Vector_Any(Vec, Value, PredicateExpr) -> bool` - `true` iff `PredicateExpr`
+is true for any element.
 
 Simple dynamic array of type `T`. Any struct with fields `size_t Size`, 
 `size_t Capacity` and `T *Items` is compatible with `Vector_*` operations.
@@ -63,6 +65,7 @@ while (Vector_TryPopBack(&words, &word)) {
 }
 
 printf("last=%s\n", *Vector_At(words, -1));
+printf("contains fox? %s\n", Vector_Any(words, it, 0 == strcmp(it, "fox")) ? "yes" : "no");
 
 Vector_Free(&words);
 ```

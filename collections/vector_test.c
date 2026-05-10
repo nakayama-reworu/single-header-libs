@@ -209,6 +209,37 @@ Testing_Fact(Empty_returns_true_after_Clear) {
     Vector_Free(&sut);
 }
 
+Testing_Fact(Any_returns_false_if_no_elements_match) {
+    Vector_Of(int) sut = {0};
+
+    Vector_PushBack(&sut, 1);
+    Vector_PushBack(&sut, 2);
+    Vector_PushBack(&sut, 3);
+
+    Testing_Assert(false == Vector_Any(sut, value, 42 == value), "expected Any to return false");
+
+    Vector_Free(&sut);
+}
+
+Testing_Fact(Any_returns_true_if_an_elements_matches) {
+    Vector_Of(char const *) sut = {0};
+
+    Vector_PushBack(&sut, "a");
+    Vector_PushBack(&sut, "quick");
+    Vector_PushBack(&sut, "brown");
+    Vector_PushBack(&sut, "fox");
+
+    printf("contains fox? %s\n", Vector_Any(sut, it, 0 == strcmp(it, "fox")) ? "yes" : "no");
+    Testing_Assert(
+            Vector_Any(sut, value, ({
+                0 == strcmp("brown", value);
+            })),
+            "expected Any to return true"
+    );
+
+    Vector_Free(&sut);
+}
+
 Testing_AllTests = {
         Testing_AddTest(empty_vector_has_size_and_capacity_of_0),
         Testing_AddTest(PushBack_appends_elements),
@@ -224,6 +255,8 @@ Testing_AllTests = {
         Testing_AddTest(Empty_returns_false_for_non_empty),
         Testing_AddTest(Empty_returns_true_for_vector_with_all_elements_removed),
         Testing_AddTest(Empty_returns_true_after_Clear),
+        Testing_AddTest(Any_returns_false_if_no_elements_match),
+        Testing_AddTest(Any_returns_true_if_an_elements_matches),
 };
 
 Testing_RunAllTests();
