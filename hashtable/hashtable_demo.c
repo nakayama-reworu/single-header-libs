@@ -21,11 +21,9 @@ int int_cmp(const void *p1, const void *p2) {
     return *i1 - *i2;
 }
 
-
 void int_int_pair_print(Pair(int, int) pair) {
     printf("Pair{.Key=%d, .Value=%d}\n", pair.Key, pair.Value);
 }
-
 
 int main(void) {
     Pair(int, int) *t = hashtable(typeof(*t), int_hash, int_cmp);
@@ -49,7 +47,8 @@ int main(void) {
     hashtable_foreach(p, t) {
         n += p.Value;
     }
-    hashtable_foreach(p, t) {
+    const Pair(int, int) *const_t = t;
+    hashtable_foreach(p, const_t) {
         int_int_pair_print(p);
     }
     if (total_numbers != n) {
