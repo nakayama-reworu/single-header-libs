@@ -6,8 +6,10 @@
 
 #include "testing/testing.h"
 
+typedef List(int) IntsList;
+
 Testing_Fact(Free_sets_head_pointer_to_null) {
-    List_Of(int) *sut = NULL;
+    IntsList *sut = List_Empty(IntsList);
 
     List_PushFront(&sut, 1);
     List_PushFront(&sut, 2);
@@ -19,7 +21,7 @@ Testing_Fact(Free_sets_head_pointer_to_null) {
 }
 
 Testing_Fact(PushFront_inserts_elements) {
-    List_Of(int) *sut = NULL;
+    IntsList *sut = List_Empty(IntsList);
 
     List_PushFront(&sut, 42);
     List_PushFront(&sut, 1337);
@@ -37,13 +39,13 @@ Testing_Fact(PushFront_inserts_elements) {
 }
 
 Testing_Fact(Tail_returns_null_for_empty_list) {
-    List_Of(int) *sut = NULL;
+    IntsList *sut = List_Empty(IntsList);
 
     Testing_Assert(NULL == List_Tail(sut), "tail of empty list must be NULL");
 }
 
 Testing_Fact(Tail_returns_last_node) {
-    List_Of(int) *sut = NULL;
+    IntsList *sut = List_Empty(IntsList);
     List_PushFront(&sut, 0);
     typeof(sut) const lastNode = sut;
 
@@ -58,7 +60,7 @@ Testing_Fact(Tail_returns_last_node) {
 }
 
 Testing_Fact(PushBack_inserts_elements) {
-    List_Of(int) *sut = NULL;
+    IntsList *sut = List_Empty(IntsList);
     typeof(sut) tail = List_Tail(sut);
 
     int const values[] = {1, 2, 3, 4, 5, 6, 7};
@@ -77,7 +79,7 @@ Testing_Fact(PushBack_inserts_elements) {
 }
 
 Testing_Fact(Size_returns_0_for_empty_list) {
-    List_Of(int) *sut = NULL;
+    IntsList *sut = List_Empty(IntsList);
 
     size_t const size = List_Size(sut);
 
@@ -87,7 +89,7 @@ Testing_Fact(Size_returns_0_for_empty_list) {
 }
 
 Testing_Fact(Size_returns_number_of_elements) {
-    List_Of(int) *sut = NULL;
+    IntsList *sut = List_Empty(IntsList);
     size_t const expectedSize = 10;
 
     for (size_t i = 0; i < expectedSize; i++) {
@@ -101,7 +103,7 @@ Testing_Fact(Size_returns_number_of_elements) {
 }
 
 Testing_Fact(TryPopFront_returns_false_for_empty_list) {
-    List_Of(int) *sut = NULL;
+    IntsList *sut = List_Empty(IntsList);
 
     int value;
     Testing_Assert(false == List_TryPopFront(&sut, &value), "expected TryPopFront to return false");
@@ -110,7 +112,7 @@ Testing_Fact(TryPopFront_returns_false_for_empty_list) {
 }
 
 Testing_Fact(TryPopFront_pops_first_element) {
-    List_Of(int) *sut = NULL;
+    IntsList *sut = List_Empty(IntsList);
 
     List_PushFront(&sut, 2);
     List_PushFront(&sut, 1);
@@ -126,7 +128,7 @@ Testing_Fact(TryPopFront_pops_first_element) {
 }
 
 Testing_Fact(ForEach_never_executes_body_for_empty_list) {
-    List_Of(int) *sut = NULL;
+    IntsList *sut = List_Empty(IntsList);
 
     int bodyExecuted = false;
     List_ForEach(pValue, sut) {
@@ -140,7 +142,7 @@ Testing_Fact(ForEach_never_executes_body_for_empty_list) {
 }
 
 Testing_Fact(ForEach_iterates_over_all_elements) {
-    List_Of(int) *sut = NULL;
+    IntsList *sut = List_Empty(IntsList);
     typeof(sut) tail = List_Tail(sut);
 
     int const elements[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
@@ -162,25 +164,25 @@ Testing_Fact(ForEach_iterates_over_all_elements) {
     List_Free(&sut);
 }
 
-Testing_Fact(Empty_returns_true_for_new_empty_list) {
-    List_Of(int) *sut = NULL;
+Testing_Fact(IsEmpty_returns_true_for_new_empty_list) {
+    IntsList *sut = List_Empty(IntsList);
 
-    Testing_Assert(List_Empty(sut), "expected Empty to return true");
+    Testing_Assert(List_IsEmpty(sut), "expected Empty to return true");
 
     List_Free(&sut);
 }
 
-Testing_Fact(Empty_returns_false_for_non_empty_lists) {
-    List_Of(int) *sut = NULL;
+Testing_Fact(IsEmpty_returns_false_for_non_empty_lists) {
+    IntsList *sut = List_Empty(IntsList);
     List_PushFront(&sut, 42);
 
-    Testing_Assert(false == List_Empty(sut), "expected Empty to return false");
+    Testing_Assert(false == List_IsEmpty(sut), "expected Empty to return false");
 
     List_Free(&sut);
 }
 
-Testing_Fact(Empty_returns_true_after_all_list_elements_were_removed) {
-    List_Of(int) *sut = NULL;
+Testing_Fact(IsEmpty_returns_true_after_all_list_elements_were_removed) {
+    IntsList *sut = List_Empty(IntsList);
 
     List_PushFront(&sut, 42);
     List_PushFront(&sut, 1337);
@@ -188,7 +190,7 @@ Testing_Fact(Empty_returns_true_after_all_list_elements_were_removed) {
     int value;
     while (List_TryPopFront(&sut, &value)) { }
 
-    Testing_Assert(List_Empty(sut), "expected Empty to return true");
+    Testing_Assert(List_IsEmpty(sut), "expected Empty to return true");
 
     List_Free(&sut);
 }
@@ -205,9 +207,9 @@ Testing_AllTests = {
         Testing_AddTest(TryPopFront_pops_first_element),
         Testing_AddTest(ForEach_never_executes_body_for_empty_list),
         Testing_AddTest(ForEach_iterates_over_all_elements),
-        Testing_AddTest(Empty_returns_true_for_new_empty_list),
-        Testing_AddTest(Empty_returns_false_for_non_empty_lists),
-        Testing_AddTest(Empty_returns_true_after_all_list_elements_were_removed),
+        Testing_AddTest(IsEmpty_returns_true_for_new_empty_list),
+        Testing_AddTest(IsEmpty_returns_false_for_non_empty_lists),
+        Testing_AddTest(IsEmpty_returns_true_after_all_list_elements_were_removed),
 };
 
 Testing_RunAllTests();
