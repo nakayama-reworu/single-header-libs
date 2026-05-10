@@ -288,6 +288,27 @@ Testing_Fact(GetOrDefault_returns_value_if_key_exists) {
     Map_Free(&sut);
 }
 
+Testing_Fact(GetOrDefault_only_evaluates_default_expression_if_key_does_not_exist) {
+    StringIntMap sut = Map_Empty(StringIntMap, StrHash, StrEquals);
+
+    char const *const key = "Hello";
+    int const value = 42;
+    Map_Put(&sut, key, value);
+
+    bool defaultExprExecuted = false;
+
+    Testing_Assert(
+            value == Map_GetOrDefault(sut, key, ({
+                defaultExprExecuted = true;
+                -1;
+            })),
+            "expected GetOrDefault to return existing value"
+    );
+    Testing_Assert(false == defaultExprExecuted, "expected default expression to not be executed");
+
+    Map_Free(&sut);
+}
+
 Testing_Fact(GetOrDefault_returns_default_if_key_does_not_exist) {
     StringIntMap sut = Map_Empty(StringIntMap, StrHash, StrEquals);
 
@@ -388,6 +409,7 @@ Testing_AllTests = {
         Testing_AddTest(TryGet_returns_false_when_hash_exists_but_key_does_not),
         Testing_AddTest(TryGet_retrieves_all_inserted_values_with_distinct_keys),
         Testing_AddTest(GetOrDefault_returns_value_if_key_exists),
+        Testing_AddTest(GetOrDefault_only_evaluates_default_expression_if_key_does_not_exist),
         Testing_AddTest(GetOrDefault_returns_default_if_key_does_not_exist),
         Testing_AddTest(ForEach_never_executes_body_for_empty_list),
         Testing_AddTest(ForEach_iterates_over_all_elements),
