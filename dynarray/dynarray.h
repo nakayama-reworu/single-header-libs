@@ -74,8 +74,10 @@ bool ArrayPop(void *array, void *dst);
 #define ARRAY_END(Array) (typeof(Array)) (ARRAY_AT(Array, ArraySize(Array)))
 
 #define ARRAY_FOREACH(Array, Action) \
-for (typeof(Array) _it = (Array); _it != ARRAY_END(Array); _it++) { \
-    Action(_it); \
-}
+do { \
+    for (size_t _i = 0; _i < ArraySize(Array); _i++) { \
+        Action(ARRAY_AT((Array), _i)); \
+    } \
+} while (false)
 
 #endif //PLAYGROUND_DYNARRAY_H
