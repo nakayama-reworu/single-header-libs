@@ -8,7 +8,12 @@ DeclarePair(int, int);
 
 
 size_t int_hash(const void *p) {
-    return *(int *) p;
+    // https://stackoverflow.com/a/12996028/17654649
+    int x = *(int *) p;
+    x = ((x >> 16) ^ x) * 0x45d9f3b;
+    x = ((x >> 16) ^ x) * 0x45d9f3b;
+    x = (x >> 16) ^ x;
+    return x;
 }
 
 int int_cmp(const void *p1, const void *p2) {
