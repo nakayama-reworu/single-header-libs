@@ -3,6 +3,9 @@
 
 #include <stdio.h>
 
+#define CONCAT_(x, y)   x ## y
+#define CONCAT(x, y)    CONCAT_(x, y)
+
 #define NAME_OF(It) #It
 
 #define LOG(Level, Message, ...)                        \

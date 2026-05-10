@@ -1,6 +1,8 @@
 #ifndef PLAYGROUND_HASHTABLE_H
 #define PLAYGROUND_HASHTABLE_H
 
+#include "common/macros.h"
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -105,19 +107,18 @@ void HashTable_NextEntry(HashTableIterator *it);
 #define HashTable_Entry(table, iterator)    (table)[(iterator).BucketIndex][(iterator).EntryIndex]
 
 #define HashTable_ForEach(entry_name, table)                                \
-typeof(**table) entry_name;                                                 \
-HashTableIterator _it = HashTable_BeginEntries(table);                      \
-if (HashTable_HasMoreEntries(_it)) {                                        \
-    entry_name = HashTable_Entry(table, _it);                               \
-}                                                                           \
+HashTableIterator CONCAT(_it_, __LINE__) = HashTable_BeginEntries(table);   \
 for (                                                                       \
-    ;                                                                       \
-    HashTable_HasMoreEntries(_it);                                          \
-    HashTable_NextEntry(&_it),                                              \
-    (HashTable_HasMoreEntries(_it)                                          \
-        ? (entry_name = HashTable_Entry(table, _it))                        \
-        : entry_name)                                                       \
+    typeof(**table) entry_name = (                                          \
+        HashTable_HasMoreEntries(CONCAT(_it_, __LINE__))                    \
+            ? HashTable_Entry(table, CONCAT(_it_, __LINE__))                \
+            : (typeof(**table)) {}                                          \
+    );                                                                      \
+    HashTable_HasMoreEntries(CONCAT(_it_, __LINE__));                       \
+    HashTable_NextEntry(&CONCAT(_it_, __LINE__)),                           \
+        (HashTable_HasMoreEntries(CONCAT(_it_, __LINE__))                   \
+            ? (entry_name = HashTable_Entry(table, CONCAT(_it_, __LINE__))) \
+            : entry_name)                                                   \
 )
-
 
 #endif //PLAYGROUND_HASHTABLE_H

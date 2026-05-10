@@ -48,6 +48,8 @@ int main(void) {
     size_t total_count = 0;
     HashTable_ForEach(pair, frequencies) {
         Array_Append(pairs, pair);
+    }
+    HashTable_ForEach(pair, frequencies) {
         total_count += pair.Value;
     }
     assert(total_count == Array_Size(numbers));
