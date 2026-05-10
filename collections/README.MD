@@ -254,11 +254,121 @@ A collections of key-value pairs.
 
 ### Type constructors
 
-_TODO_
+* [Map](#map-1)
+
+#### Map
+```c
+#define Map(TKey, TValue)           \
+struct {                            \
+    size_t Size;                    \
+    size_t Capacity;                \
+    size_t (*Hash)(TKey);           \
+    bool (*KeyEquals)(TKey, TKey);  \
+    struct {                        \
+        TKey Key;                   \
+        TValue Value;               \
+        bool Used;                  \
+    } *Entries;                     \
+}
+```
 
 ### Functions
 
-_TODO_
+* [Map_Empty](#mapempty)
+* [Map_Of](#mapof)
+* [Map_Free](#mapfree)
+* [Map_Put](#mapput)
+* [Map_At](#mapat)
+* [Map_TryGet](#maptryget)
+* [Map_GetOrDefault](#mapgetordefault)
+* [Map_ForEach](#mapforeach)
+* [Map_IsEmpty](#mapisempty)
+
+#### Map_Empty
+```c
+#define Map_Empty(MapType, Hash_, KeyEquals_)
+```
+Return an empty map of type `MapType`, with hash function `Hash_` and 
+key equality function `KeyEquals_`.
+
+`Hash_` must have the following signature:
+```c
+size_t (*)(TKey)
+```
+`KeyEquals_` must have the following signature:
+```c
+bool (*)(TKey, TKey)
+```
+
+#### Map_Of
+```c
+#define Map_Of(MapType, Hash_, KeyEquals_, ...)
+```
+Construct a map of type `MapType`, with hash function `Hash_` and
+key equality function `KeyEquals_`, and given key-value pairs.
+
+Example:
+```c
+IntIntMap map = Map_Of(
+        IntIntMap, IntHash, IntEquals,
+        { .Key = 1, .Value = 2 },
+        { .Key = 2, .Value = 7 },
+        { .Key = 3, .Value = -42 },
+);
+```
+
+#### Map_Free
+```c
+#define Map_Free(MapPtr)
+```
+Free a map at `MapPtr` and set it to:
+```c
+Map_Empty(typeof(*MapPtr), MapPtr->Hash, MapPtr->KeyEquals)
+```
+
+#### Map_Put
+```c
+#define Map_Put(MapPtr, Key_, Value_)
+```
+Insert a key-value pair if `Key_` is not present, 
+update existing value otherwise.
+
+Existing key is never reassigned.
+
+#### Map_At
+```c
+#define Map_At(Map_, Key_)
+```
+Return a pointer to value associated with `Key_` or `NULL` if 
+`Key_` is not present.
+
+#### Map_TryGet
+```c
+#define Map_TryGet(Map_, Key_, ValuePtr)
+```
+If `Key_` is present, assign existing value to `*ValuePtr` 
+and return `true`; return `false` otherwise.
+
+#### Map_GetOrDefault
+```c
+#define Map_GetOrDefault(Map_, Key_, DefaultExpr)
+```
+Return a value associated with `Key_` if it is present, return the 
+value of `DefaultExpr` otherwise. 
+
+`DefaultExpr` is not evaluated if `Key_` exists.
+
+#### Map_ForEach
+```c
+#define Map_ForEach(EntryPtr, Map_)
+```
+Expands into a `for` loop header that allows iterating over map entries.
+
+#### Map_IsEmpty
+```c
+#define Map_IsEmpty(Map_)
+```
+Return `true` iff `Map_` contains no entries.
 
 ## List
 
