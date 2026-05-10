@@ -7,22 +7,22 @@
 int main(void) {
     void *ptr = NULL;
     if (NULL == ptr) {
-        log_null(ptr);
+        LogNull(ptr);
     }
 
     const int i = 42;
-    log_debug("i = %d", i);
+    LogDebug("i = %d", i);
 
-    log_error("operation failed");
+    LogError("operation failed");
 
     errno = EBUSY;
-    log_perror("syscall #1");
+    LogPerror("syscall #1");
 
     errno = 0;
-    log_perror("syscall #2");
+    LogPerror("syscall #2");
 
     errno = EACCES;
-    log_perror();
+    LogPerror();
 
     return EXIT_SUCCESS;
 }

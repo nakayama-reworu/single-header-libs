@@ -28,7 +28,7 @@ const char *const LOG_LEVEL_NAMES[] = {
         "ERROR"
 };
 
-#define log(level, format, ...)                             \
+#define Log(level, format, ...)                             \
 do {                                                        \
     time_t _timer = time(NULL);                             \
     struct tm* _t = localtime(&_timer);                     \
@@ -45,24 +45,24 @@ do {                                                        \
 #define LOG_LEVEL_DEBUG 0
 #define LOG_LEVEL_ERROR 1
 
-#define log_error(format, ...) log(LOG_LEVEL_ERROR, format, ##__VA_ARGS__)
+#define LogError(format, ...) Log(LOG_LEVEL_ERROR, format, ##__VA_ARGS__)
 
 #ifdef LOG_DEBUG
-#define log_debug(format, ...) log(LOG_LEVEL_DEBUG, format, ##__VA_ARGS__)
+#define LogDebug(format, ...) Log(LOG_LEVEL_DEBUG, format, ##__VA_ARGS__)
 #else
-#define log_debug(...) (void) 0
+#define LogDebug(...) (void) 0
 #endif
 
 #define LOG_NAMEOF_(it)     ({ (void) it; #it; })
 
-#define log_null(name) log_error("'%s' was %s", LOG_NAMEOF_(name), LOG_NAMEOF_(NULL))
-#define log_perror(format, ...)                             \
+#define LogNull(name) LogError("'%s' was %s", LOG_NAMEOF_(name), LOG_NAMEOF_(NULL))
+#define LogPerror(format, ...)                              \
 do {                                                        \
     const typeof(errno) saved_errno = errno;                \
     const char *format_wrapper[] = {format};                \
     const size_t format_count =                             \
         sizeof(format_wrapper) / sizeof(*format_wrapper);   \
-    log_error(                                              \
+    LogError(                                               \
         format "%s%s (errno)",                              \
         format_count > 0                                    \
             ? ": "                                          \
