@@ -27,6 +27,18 @@ Testing_Fact(FromPtr_returns_vector_with_elements_from_given_address) {
     Vector_Free(&sut);
 }
 
+Testing_Fact(FromPtr_can_copy_const_elements) {
+    int const nums[] = {1, 2, 3, 4, 5};
+    size_t const numsSize = sizeof(nums) / sizeof(*nums);
+
+    IntVector sut = Vector_FromPtr(IntVector, nums, numsSize);
+
+    Testing_Assert(numsSize == sut.Size, "wrong Size");
+    Testing_Assert(0 == memcmp(nums, sut.Items, numsSize * sizeof(int)), "wrong contents");
+
+    Vector_Free(&sut);
+}
+
 Testing_Fact(FromArray_returns_vector_with_elements_from_given_automatic_array) {
     int nums[] = {1, 2, 3, 4, 5};
     size_t const numsSize = sizeof(nums) / sizeof(*nums);
@@ -269,6 +281,7 @@ Testing_Fact(At_returns_NULL_for_invalid_index) {
 Testing_AllTests = {
         Testing_AddTest(Empty_returns_vector_with_Size_and_Capacity_set_to_0),
         Testing_AddTest(FromPtr_returns_vector_with_elements_from_given_address),
+        Testing_AddTest(FromPtr_can_copy_const_elements),
         Testing_AddTest(FromArray_returns_vector_with_elements_from_given_automatic_array),
         Testing_AddTest(FromArray_returns_vector_with_elements_from_given_array_literal),
         Testing_AddTest(From_returns_vector_with_elements_from_given_struct),

@@ -33,19 +33,17 @@ struct {                \
 
 #define Vector_Empty(VectorType) ((VectorType) {0})
 
-#define Vector_FromPtr(VectorType, Ptr, Count)              \
-({                                                          \
-    VectorType _vec_fromArray = Vector_Empty(VectorType);   \
-    typeof(*_vec_fromArray.Items) *_arr = (Ptr);            \
-    size_t const _count = (Count);                          \
-    Vector_Reserve(&_vec_fromArray, _count);                \
-    _vec_fromArray.Size = _count;                           \
-    memcpy(                                                 \
-        _vec_fromArray.Items,                               \
-        _arr,                                               \
-        sizeof(*_vec_fromArray.Items) * _count              \
-    );                                                      \
-    _vec_fromArray;                                         \
+#define Vector_FromPtr(VectorType, Ptr, Count)                          \
+({                                                                      \
+    __auto_type _vec_fromArray = Vector_Empty(VectorType);              \
+    __auto_type _arr = (Ptr);                                           \
+    size_t const _count = (Count);                                      \
+    Vector_Reserve(&_vec_fromArray, _count);                            \
+    _vec_fromArray.Size = _count;                                       \
+    for (size_t _i_fromPtr = 0; _i_fromPtr < _count; _i_fromPtr++) {    \
+        _vec_fromArray.Items[_i_fromPtr] = _arr[_i_fromPtr];            \
+    }                                                                   \
+    _vec_fromArray;                                                     \
 })
 
 #define Vector_FromArray(VectorType, Array) Vector_FromPtr(VectorType, (Array), VECTOR__ArrayLength(Array))
@@ -73,7 +71,7 @@ do {                                                                    \
     }                                                                   \
     _vecPtr_reserve->Capacity = _newCapacity;                           \
     __auto_type _items = VECTOR__CallChecked(realloc, (                 \
-        _vecPtr_reserve->Items,                                         \
+        (void *) _vecPtr_reserve->Items,                                \
         _vecPtr_reserve->Capacity * sizeof(_vecPtr_reserve->Items[0])   \
     ));                                                                 \
     _vecPtr_reserve->Items = _items;                                    \
