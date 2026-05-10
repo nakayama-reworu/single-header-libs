@@ -204,6 +204,81 @@ Testing_Fact(TryGet_retrieves_all_inserted_values_with_distinct_keys) {
     Map_Free(&sut);
 }
 
+Testing_Fact(GetOrDefault_returns_value_if_key_exists) {
+    Map_Of(char const *, int) sut = {.Hash = StrHash, .KeyEquals = StrEquals};
+
+    char const *const key = "Hello";
+    int const value = 42;
+    Map_Put(&sut, key, value);
+
+    Testing_Assert(value == Map_GetOrDefault(sut, key, -1), "expected GetOrDefault to return existing value");
+
+    Map_Free(&sut);
+}
+
+Testing_Fact(GetOrDefault_returns_default_if_key_does_not_exist) {
+    Map_Of(char const *, int) sut = {.Hash = StrHash, .KeyEquals = StrEquals};
+
+    char const *const key = "Hello";
+    int const value = 42;
+    Map_Put(&sut, key, value);
+
+    Testing_Assert(-1 == Map_GetOrDefault(sut, key + 1, -1), "expected GetOrDefault to return default value");
+
+    Map_Free(&sut);
+}
+
+Testing_Fact(ForEach_never_executes_body_for_empty_list) {
+    Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
+
+    int bodyExecuted = false;
+    Map_ForEach(pValue, sut) {
+        (void) pValue;
+        bodyExecuted = true;
+    }
+
+    Testing_Assert(false == bodyExecuted, "body must not be executed for empty map");
+
+    Map_Free(&sut);
+}
+
+Testing_Fact(ForEach_iterates_over_all_elements) {
+    Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
+
+    int const keys[] = {1, 2, 4, 8, 16, 32, 64, 128, 256};
+    int const values[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+    size_t const keysCount = sizeof(keys) / sizeof(keys[0]);
+
+    for (size_t i = 0; i < keysCount; i++) {
+        Map_Put(&sut, keys[i], values[i]);
+    }
+
+    bool visited[keysCount];
+    memset(visited, 0x00, sizeof(visited));
+    Map_ForEach(entry, sut) {
+        size_t keyIndex = 0;
+        while (keyIndex < keysCount && keys[keyIndex] != entry->Key) { keyIndex++; }
+
+        Testing_Assert(keyIndex < keysCount, "expected key to be one of inserted keys");
+        if (keyIndex >= keysCount) break;
+
+        Testing_Assert(values[keyIndex] == entry->Value, "wrong value");
+        Testing_Assert(false == visited[keyIndex], "expected key to not be visited already");
+
+        visited[keyIndex] = true;
+    }
+
+    size_t visitedCount = 0;
+    for (size_t i = 0; i < keysCount; i++) {
+        visitedCount += visited[i];
+    }
+
+    Testing_Assert(keysCount == visitedCount, "expected ForEach to iterate over all inserted keys");
+
+
+    Map_Free(&sut);
+}
+
 Testing_AllTests = {
         Testing_AddTest(Put_associates_key_with_value),
         Testing_AddTest(Put_handles_collisions_with_constant_hash),
@@ -215,6 +290,10 @@ Testing_AllTests = {
         Testing_AddTest(TryGet_returns_false_when_key_does_not_exist),
         Testing_AddTest(TryGet_returns_false_when_hash_exists_but_key_does_not),
         Testing_AddTest(TryGet_retrieves_all_inserted_values_with_distinct_keys),
+        Testing_AddTest(GetOrDefault_returns_value_if_key_exists),
+        Testing_AddTest(GetOrDefault_returns_default_if_key_does_not_exist),
+        Testing_AddTest(ForEach_never_executes_body_for_empty_list),
+        Testing_AddTest(ForEach_iterates_over_all_elements),
 };
 
 Testing_RunAllTests();

@@ -94,40 +94,40 @@ do {                                                            \
     _ok;                                                \
 })
 
-#define Map_GetOrDefault(MapPtr, Key_, DefaultExpr)         \
-({                                                          \
-    typeof((MapPtr)->Entries->Value) _value;                \
-    if (false == Map_TryGet((MapPtr), (Key_), &_value)) {   \
-        _value = (DefaultExpr);                             \
-    }                                                       \
-    _value;                                                 \
+#define Map_GetOrDefault(Map, Key_, DefaultExpr)        \
+({                                                      \
+    typeof((Map).Entries->Value) _value;                \
+    if (false == Map_TryGet((Map), (Key_), &_value)) {  \
+        _value = (DefaultExpr);                         \
+    }                                                   \
+    _value;                                             \
 })
 
-#define Map_TryFindNextUsedIndex(MapPtr, BaseIndex, NextIndexPtr)   \
-({                                                                  \
-    size_t _i_next = (BaseIndex);                                   \
-    bool _ok = false;                                               \
-    for (; _i_next < (MapPtr)->Capacity; _i_next++) {               \
-        if (false == (MapPtr)->Entries[_i_next].Used) {             \
-            continue;                                               \
-        }                                                           \
-        *(NextIndexPtr) = _i_next;                                  \
-        _ok = true;                                                 \
-        break;                                                      \
-    }                                                               \
-     _ok;                                                           \
+#define Map_TryFindNextUsedIndex(Map, BaseIndex, NextIndexPtr)  \
+({                                                              \
+    size_t _i_next = (BaseIndex);                               \
+    bool _ok = false;                                           \
+    for (; _i_next < (Map).Capacity; _i_next++) {               \
+        if (false == (Map).Entries[_i_next].Used) {             \
+            continue;                                           \
+        }                                                       \
+        *(NextIndexPtr) = _i_next;                              \
+        _ok = true;                                             \
+        break;                                                  \
+    }                                                           \
+     _ok;                                                       \
 })
 
-#define Map_ForEach(EntryPtr, MapPtr)                                                               \
+#define Map_ForEach(EntryPtr, Map)                                                                  \
 size_t MAP_CONCAT(_i_, __LINE__) = 0;                                                               \
 for (                                                                                               \
-    typeof(*((MapPtr)->Entries)) *pEntry =                                                          \
-        Map_TryFindNextUsedIndex(&map, MAP_CONCAT(_i_, __LINE__), &MAP_CONCAT(_i_, __LINE__))       \
-            ? &((MapPtr)->Entries[MAP_CONCAT(_i_, __LINE__)])                                       \
+    typeof(*((Map).Entries)) *EntryPtr =                                                            \
+        Map_TryFindNextUsedIndex((Map), MAP_CONCAT(_i_, __LINE__), &MAP_CONCAT(_i_, __LINE__))      \
+            ? &((Map).Entries[MAP_CONCAT(_i_, __LINE__)])                                           \
             : NULL;                                                                                 \
-    NULL != pEntry;                                                                                 \
-    pEntry =                                                                                        \
-        Map_TryFindNextUsedIndex(&map, MAP_CONCAT(_i_, __LINE__) + 1, &MAP_CONCAT(_i_, __LINE__))   \
-            ? &((MapPtr)->Entries[MAP_CONCAT(_i_, __LINE__)])                                       \
+    NULL != EntryPtr;                                                                               \
+    EntryPtr =                                                                                      \
+        Map_TryFindNextUsedIndex((Map), MAP_CONCAT(_i_, __LINE__) + 1, &MAP_CONCAT(_i_, __LINE__))  \
+            ? &((Map).Entries[MAP_CONCAT(_i_, __LINE__)])                                           \
             : NULL                                                                                  \
 )
