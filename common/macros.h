@@ -5,11 +5,15 @@
 
 #define NAME_OF(It) #It
 
-#define LOG(Level, Message, ...) fprintf( \
-    stderr, \
-    "[" #Level "] [%s:%d] %s - " Message "\n", \
-    __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__ \
-)
+#define LOG(Level, Message, ...)                        \
+do {                                                    \
+    fprintf(                                            \
+        stderr,                                         \
+        "[" #Level "] [%s:%d] %s - " Message "\n",      \
+        __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__ \
+    );                                                  \
+    fflush(stderr);                                     \
+} while (0)
 
 #ifdef DEBUG
 #define LOG_DEBUG(Message, ...) LOG(DEBUG, Message, ##__VA_ARGS__)
