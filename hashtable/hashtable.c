@@ -100,8 +100,8 @@ static void hashtable_put_ignore_load(HashTable *table, const void *key, const v
     hashtable_set_entry(table, entry, key, value);
 
     LOG_DEBUG(
-            "Placed entry with hash %d to %d, slots_used=%d, load_factor=%.2lf",
-            (int) base_index, (int) (base_index + offset), (int) table->UsedSlots, load_factor(table)
+            "Placed entry with hash %d, slots_used=%d, load_factor=%.2lf",
+            (int) base_index, (int) table->UsedSlots, load_factor(table)
     );
 }
 
