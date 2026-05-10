@@ -89,18 +89,19 @@ do {                                                    \
     }                                                   \
 } while (false)
 
-#define Array_ForEach(element_name, array)  \
-typeof(*array) element_name;                \
-if (false == Array_IsEmpty(array)) {        \
-    element_name = array[0];                \
-}                                           \
-for (                                       \
-    size_t _i = 0;                          \
-    _i < Array_Size(array);                 \
-    _i++,                                   \
-    element_name = _i < Array_Size(array)   \
-        ? array[_i]                         \
-        : element_name                      \
+#define Array_ForEach(element_name, array)      \
+for (                                           \
+    typeof(*array) *p_##element_name = array,   \
+        element_name = (Array_IsEmpty(array)    \
+            ? (typeof(*array)) {}               \
+            : *p_##element_name                 \
+        );                                      \
+    p_##element_name != Array_End(array);       \
+    p_##element_name++,                         \
+        (p_##element_name != Array_End(array)   \
+            ? (element_name = *p_##element_name)\
+            : element_name                      \
+        )                                       \
 )
 
 #endif //PLAYGROUND_DYNARRAY_H
