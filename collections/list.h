@@ -1,13 +1,11 @@
 #pragma once
 
 #ifndef CallChecked
-#error Please include call_checked.h
+#error Please include call_checked.h before list.h
 #endif
 
-#ifndef LIST_CONCAT
 #define LIST_CONCAT_(A, B)   A ## B
 #define LIST_CONCAT(A, B)    LIST_CONCAT_(A, B)
-#endif
 
 #define List_Of(TValue)                         \
 struct LIST_CONCAT(List_, __LINE__) {           \
