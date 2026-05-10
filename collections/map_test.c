@@ -146,6 +146,35 @@ Testing_Fact(Size_is_not_increased_when_Put_is_called_with_existing_key) {
     Map_Free(&sut);
 }
 
+Testing_Fact(At_returns_NULL_if_key_does_not_exist) {
+    Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
+
+    Map_Put(&sut, 1, 1);
+    Map_Put(&sut, 2, 4);
+    Map_Put(&sut, 3, 9);
+
+    Testing_Assert(NULL == Map_At(sut, 4), "expected At to return NULL");
+
+    Map_Free(&sut);
+}
+
+Testing_Fact(At_returns_pointer_to_value_for_existing_key) {
+    Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
+
+    Map_Put(&sut, 1, 1);
+    Map_Put(&sut, 2, 4);
+    Map_Put(&sut, 3, 9);
+
+    int *valuePtr = Map_At(sut, 2);
+    Testing_Assert(NULL != valuePtr, "expected At to return non-NULL pointer");
+
+    *valuePtr = 42;
+
+    Testing_Assert(42 == Map_GetOrDefault(sut, 2, -1), "expected value to be updated via pointer");
+
+    Map_Free(&sut);
+}
+
 Testing_Fact(TryGet_returns_false_for_empty_map) {
     Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
 
@@ -304,6 +333,8 @@ Testing_AllTests = {
         Testing_AddTest(Size_is_equal_to_number_of_distinct_keys_inserted),
         Testing_AddTest(Size_is_not_increased_when_Put_is_called_with_existing_key),
         Testing_AddTest(TryGet_returns_false_for_empty_map),
+        Testing_AddTest(At_returns_NULL_if_key_does_not_exist),
+        Testing_AddTest(At_returns_pointer_to_value_for_existing_key),
         Testing_AddTest(TryGet_returns_false_when_key_does_not_exist),
         Testing_AddTest(TryGet_returns_false_when_hash_exists_but_key_does_not),
         Testing_AddTest(TryGet_retrieves_all_inserted_values_with_distinct_keys),

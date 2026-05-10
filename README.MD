@@ -131,6 +131,8 @@ _Interface:_
  * `Map_Of(TKey, TValue)` - construct a map type;
  * `Map_Free(MapPtr)` - free a map;
  * `Map_Put(MapPtr, Key_, Value_)` - put a `Value_` at `Key_`;
+ * `Map_At(Map, Key_) -> TValue*` - get a pointer to value at `Key_`
+or `NULL` if `Key_` does not exist;
  * `Map_TryGet(Map, Key_, ValuePtr) -> bool` - if `Key_` is present,
 puts the corresponding value to location `ValuePtr` points to and
 returns `true`, otherwise returns `false`;
