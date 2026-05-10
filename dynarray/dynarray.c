@@ -16,19 +16,19 @@ void *Array_New(const size_t size, const size_t element_size_bytes) {
 
     const size_t total_size_bytes = capacity * element_size_bytes + sizeof(ArrayHeader);
 
-    ArrayHeader *data;
-    if (NULL == (data = (ArrayHeader *) malloc(total_size_bytes))) {
+    ArrayHeader *header;
+    if (NULL == (header = (ArrayHeader *) malloc(total_size_bytes))) {
         perror(NAME_OF(ArrayNew));
         return NULL;
     }
 
-    *data = (ArrayHeader) {
+    *header = (ArrayHeader) {
             .ElementSizeBytes = element_size_bytes,
             .Size = size,
             .Capacity = capacity,
     };
 
-    return (void *) (data + 1);
+    return SHIFT(header, sizeof(ArrayHeader));
 }
 
 
