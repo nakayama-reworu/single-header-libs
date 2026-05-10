@@ -98,3 +98,4 @@ for (                                                                           
     _size;                                                              \
 })
 
+#define List_Empty(HeadPtr) (NULL == (HeadPtr))

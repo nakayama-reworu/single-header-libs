@@ -163,6 +163,37 @@ Testing_Fact(ForEach_iterates_over_all_elements) {
     List_Free(&sut);
 }
 
+Testing_Fact(Empty_returns_true_for_new_empty_list) {
+    List_Of(int) *sut = NULL;
+
+    Testing_Assert(List_Empty(sut), "expected Empty to return true");
+
+    List_Free(&sut);
+}
+
+Testing_Fact(Empty_returns_false_for_non_empty_lists) {
+    List_Of(int) *sut = NULL;
+    List_PushFront(&sut, 42);
+
+    Testing_Assert(false == List_Empty(sut), "expected Empty to return false");
+
+    List_Free(&sut);
+}
+
+Testing_Fact(Empty_returns_true_after_all_list_elements_were_removed) {
+    List_Of(int) *sut = NULL;
+
+    List_PushFront(&sut, 42);
+    List_PushFront(&sut, 1337);
+
+    int value;
+    while (List_TryPopFront(&sut, &value)) { }
+
+    Testing_Assert(List_Empty(sut), "expected Empty to return true");
+
+    List_Free(&sut);
+}
+
 Testing_AllTests = {
         Testing_AddTest(Free_sets_head_pointer_to_null),
         Testing_AddTest(PushFront_inserts_elements),
@@ -175,6 +206,9 @@ Testing_AllTests = {
         Testing_AddTest(TryPopFront_pops_first_element),
         Testing_AddTest(ForEach_never_executes_body_for_empty_list),
         Testing_AddTest(ForEach_iterates_over_all_elements),
+        Testing_AddTest(Empty_returns_true_for_new_empty_list),
+        Testing_AddTest(Empty_returns_false_for_non_empty_lists),
+        Testing_AddTest(Empty_returns_true_after_all_list_elements_were_removed),
 };
 
 Testing_RunAllTests();

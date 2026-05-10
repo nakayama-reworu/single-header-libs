@@ -54,6 +54,25 @@ Vector_Free(&words);
 
 [list.h](collections/list.h), [list_test.c](collections/list_test.c)
 
+_Interface:_
+
+ * `List_Of(TValue)` - construct a list node type;
+ * `List_Free(HeadPtrPtr)` - free a list;
+ * `List_PushFront(HeadPtrPtr, Val)` - prepend a value;
+ * `List_TryPopFront(HeadPtrPtr, ValuePtr) -> TValue` - returns `true`, 
+copies the value in the first node to location pointed
+to by `ValuePtr` and removes the first node if list is not empty,
+returns `false` otherwise;
+ * `List_PushBack(HeadPtrPtr, TailPtrPtr, Val)` - append an element;
+ * `List_ForEach(ValuePtr, HeadPtr)` - generates a `for` header to
+iterate over list elements;
+ * `List_Tail(HeadPtr) -> typeof(HeadPtr)` - returns pointer
+to last node;
+ * `List_Size(HeadPtr) -> size_t` - count the number of elements
+in the list;
+ * `List_Empty(HeadPtr) -> bool` - returns `true` if list contains
+   values, `false` otherwise.
+
 A singly linked list. A node is a struct `NodeT` that 
 has `T Value` and `NodeT *Next` field.
 
@@ -102,7 +121,7 @@ returns `true`, otherwise returns `false`;
 the value at `Key_` if present, value of `DefaultExpr` otherwise;
  * `Map_ForEach(EntryPtr, Map)` - generates a `for` header to 
 iterate over map entries.
- * `Map_Empty(Map) -> bool` - returns `true` if map conatains
+ * `Map_Empty(Map) -> bool` - returns `true` if map contains
 values, `false` otherwise.
 
 A map (dictionary) with keys of type `TKey` and values of
