@@ -15,15 +15,18 @@ void *ArrayNew(const size_t size, const size_t element_size_bytes) {
     size_t capacity = size > ARRAY_MIN_CAPACITY ? size : ARRAY_MIN_CAPACITY;
 
     const size_t total_size_bytes = capacity * element_size_bytes + sizeof(ArrayHeader);
+
     ArrayHeader *data;
     if (NULL == (data = (ArrayHeader *) malloc(total_size_bytes))) {
         perror(NAME_OF(ArrayNew));
         return NULL;
     }
 
-    data[0].ElementSizeBytes = element_size_bytes;
-    data[0].Size = size;
-    data[0].Capacity = capacity;
+    *data = (ArrayHeader) {
+            .ElementSizeBytes = element_size_bytes,
+            .Size = size,
+            .Capacity = capacity,
+    };
 
     return (void *) (data + 1);
 }
