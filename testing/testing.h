@@ -1,22 +1,22 @@
-#ifndef PLAYGROUND_TESTING_H
-#define PLAYGROUND_TESTING_H
+#ifndef TESTING
+#define TESTING
 
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef TEST_SUCCESS_STREAM
-#define TEST_SUCCESS_STREAM stdout
+#ifndef TESTING_SUCCESS_STREAM
+#define TESTING_SUCCESS_STREAM stdout
 #endif
 
-#ifndef TEST_FAILURE_STREAM
-#define TEST_FAILURE_STREAM stdout
+#ifndef TESTING_FAILURE_STREAM
+#define TESTING_FAILURE_STREAM stdout
 #endif
 
-#ifdef TEST_FILE_NAME_ONLY
-#define TEST_FILE __FILE_NAME__
+#ifdef TESTING_FILE_NAME_ONLY
+#define TESTING_FILE __FILE_NAME__
 #else
-#define TEST_FILE __FILE__
+#define TESTING_FILE __FILE__
 #endif
 
 typedef void (*TestImplementation)(size_t, const char *, bool *);
@@ -36,13 +36,13 @@ do {                                                                            
     if (false == _success) {                                                        \
         *__ok = false;                                                              \
         fprintf(                                                                    \
-            TEST_FAILURE_STREAM,                                                    \
+            TESTING_FAILURE_STREAM,                                                 \
             "[TEST %02zu] FAILED %s\n%s:%d: Assertion '%s' failed, " format "\n",   \
             __test_no, __test_name,                                                 \
-            TEST_FILE, __LINE__,                                                    \
+            TESTING_FILE, __LINE__,                                                 \
             #assertion, ##__VA_ARGS__                                               \
         );                                                                          \
-        fflush(TEST_FAILURE_STREAM);                                                \
+        fflush(TESTING_FAILURE_STREAM);                                             \
         return;                                                                     \
     }                                                                               \
 } while (0)
@@ -64,20 +64,20 @@ int main(void) {                                                \
         }                                                       \
                                                                 \
         fprintf(                                                \
-            TEST_SUCCESS_STREAM,                                \
+            TESTING_SUCCESS_STREAM,                             \
             "[TEST %02zu] PASSED %s\n",                         \
             i + 1, tests[i].Name                                \
         );                                                      \
     }                                                           \
                                                                 \
     fprintf(                                                    \
-        TEST_SUCCESS_STREAM,                                    \
+        TESTING_SUCCESS_STREAM,                                 \
         "\n%zu tests, %zu passed, %zu failed\n",                \
         testsCount, testsCount - failed, failed                 \
     );                                                          \
-    fflush(TEST_SUCCESS_STREAM);                                \
+    fflush(TESTING_SUCCESS_STREAM);                             \
     return failed > 0 ? EXIT_FAILURE : EXIT_SUCCESS;            \
 }                                                               \
 struct Testing_DummyStruct_ {}
 
-#endif //PLAYGROUND_TESTING_H
+#endif // TESTING

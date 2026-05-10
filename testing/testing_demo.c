@@ -1,6 +1,6 @@
-#define TEST_FILE_NAME_ONLY
-#define TEST_SUCCESS_STREAM stdout
-#define TEST_FAILURE_STREAM stdout
+#define TESTING_FILE_NAME_ONLY
+#define TESTING_SUCCESS_STREAM stdout
+#define TESTING_FAILURE_STREAM stderr
 
 #include "testing.h"
 
