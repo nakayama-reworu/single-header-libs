@@ -21,6 +21,23 @@ before including the collection header.
 
 [vector.h](collections/vector.h), [vector_test.c](collections/vector_test.c)
 
+_Interface:_
+
+ * `Vector_Of(TValue)` - construct a vector type;
+ * `Vector_Free(VecPtr)` - free a vector;
+ * `Vector_PushBack(VecPtr, Val)` - append an element;
+ * `Vector_TryPopBack(VecPtr, ValuePtr)` - copy last value to
+location pointed to by `ValuePtr`, decrease `Size` by `1` and 
+return `true` if vector contains elements, and `false` otherwise;
+ * `Vector_At(Vec, Index) -> TValue*` - return pointer to element at `Index`:
+   * Element at `Index` if `0 <= Index < Size`;
+   * Element at `Size - Index` if `-Size <= Index < 0` (`Index`th element from the end);
+   * `NULL` otherwise.
+ * `Vector_ForEach(ValuePtr, Vec)` - generates a `for` header to
+ iterate over vector elements;
+ * `Vector_Empty(Vec) -> bool` - `true` iff vector is empty;
+ * `Vector_Clear(VecPtr)` - set `Size` to `0`.
+
 Simple dynamic array of type `T`. Any struct with fields `size_t Size`, 
 `size_t Capacity` and `T *Items` is compatible with `Vector_*` operations.
 

@@ -160,6 +160,55 @@ Testing_Fact(At_returns_NULL_for_invalid_indices) {
     Vector_Free(&sut);
 }
 
+Testing_Fact(Empty_returns_true_for_empty_vector) {
+    Vector_Of(int) sut = {0};
+
+    Testing_Assert(Vector_Empty(sut), "expected Empty to return true");
+
+    Vector_Free(&sut);
+}
+
+Testing_Fact(Empty_returns_false_for_non_empty) {
+    Vector_Of(int) sut = {0};
+
+    Vector_PushBack(&sut, 1);
+    Vector_PushBack(&sut, 2);
+    Vector_PushBack(&sut, 3);
+
+    Testing_Assert(false == Vector_Empty(sut), "expected Empty to return false");
+
+    Vector_Free(&sut);
+}
+
+Testing_Fact(Empty_returns_true_for_vector_with_all_elements_removed) {
+    Vector_Of(int) sut = {0};
+
+    Vector_PushBack(&sut, 1);
+    Vector_PushBack(&sut, 2);
+    Vector_PushBack(&sut, 3);
+
+    int value;
+    while (Vector_TryPopBack(&sut, &value)) {}
+
+    Testing_Assert(Vector_Empty(sut), "expected Empty to return true");
+
+    Vector_Free(&sut);
+}
+
+Testing_Fact(Empty_returns_true_after_Clear) {
+    Vector_Of(int) sut = {0};
+
+    Vector_PushBack(&sut, 1);
+    Vector_PushBack(&sut, 2);
+    Vector_PushBack(&sut, 3);
+
+    Vector_Clear(&sut);
+
+    Testing_Assert(Vector_Empty(sut), "expected Empty to return true");
+
+    Vector_Free(&sut);
+}
+
 Testing_AllTests = {
         Testing_AddTest(empty_vector_has_size_and_capacity_of_0),
         Testing_AddTest(PushBack_appends_elements),
@@ -171,6 +220,10 @@ Testing_AllTests = {
         Testing_AddTest(At_returns_pointer_to_element_for_valid_non_negative_index),
         Testing_AddTest(At_returns_pointer_to_element_for_valid_negative_index),
         Testing_AddTest(At_returns_NULL_for_invalid_indices),
+        Testing_AddTest(Empty_returns_true_for_empty_vector),
+        Testing_AddTest(Empty_returns_false_for_non_empty),
+        Testing_AddTest(Empty_returns_true_for_vector_with_all_elements_removed),
+        Testing_AddTest(Empty_returns_true_after_Clear),
 };
 
 Testing_RunAllTests();
