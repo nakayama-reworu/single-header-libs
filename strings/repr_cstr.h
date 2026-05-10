@@ -20,7 +20,7 @@ void CStr_ReprToFile(FILE file[static 1], char const *str);
 #include <stdio.h>
 #include <stdlib.h>
 
-#define REPR_CSTR_CallChecked(Callee, ArgsList) \
+#define REPR_CSTR__CallChecked(Callee, ArgsList)    \
 ({                                              \
     errno = 0;                                  \
     __auto_type _r = Callee ArgsList;           \
@@ -82,7 +82,7 @@ int CStr_ReprSize(char const *str) {
 
 #define REPR_CSTR_MIN_CAPACITY ((size_t) 3)
 
-#define REPR_CSTR_SnprintfShiftChecked(DstPtr, SizePtr, Format, ...)        \
+#define REPR_CSTR__SnprintfShiftChecked(DstPtr, SizePtr, Format, ...)       \
 ({                                                                          \
     int _printed = snprintf(*(DstPtr), *(SizePtr), Format, ##__VA_ARGS__);  \
     bool _ok = false;                                                       \
@@ -99,31 +99,31 @@ bool CStr_ReprToString(char *dst, size_t dstCapacity, char const *str) {
         return false;
     }
 
-    if (false == REPR_CSTR_SnprintfShiftChecked(&dst, &dstCapacity, "\"")) {
+    if (false == REPR_CSTR__SnprintfShiftChecked(&dst, &dstCapacity, "\"")) {
         return false;
     }
 
     for (unsigned char c = *str; '\0' != *str; str++, c = *str) {
         if (NULL != REPR_CSTR_ESCAPE_SEQUENCES[c]) {
-            if (false == REPR_CSTR_SnprintfShiftChecked(&dst, &dstCapacity, "%s", REPR_CSTR_ESCAPE_SEQUENCES[c])) {
+            if (false == REPR_CSTR__SnprintfShiftChecked(&dst, &dstCapacity, "%s", REPR_CSTR_ESCAPE_SEQUENCES[c])) {
                 return false;
             }
             continue;
         }
 
         if (isprint(c)) {
-            if (false == REPR_CSTR_SnprintfShiftChecked(&dst, &dstCapacity, "%c", c)) {
+            if (false == REPR_CSTR__SnprintfShiftChecked(&dst, &dstCapacity, "%c", c)) {
                 return false;
             }
             continue;
         }
 
-        if (false == REPR_CSTR_SnprintfShiftChecked(&dst, &dstCapacity, "\\x%02hhx", c)) {
+        if (false == REPR_CSTR__SnprintfShiftChecked(&dst, &dstCapacity, "\\x%02hhx", c)) {
             return false;
         }
     }
 
-    return REPR_CSTR_SnprintfShiftChecked(&dst, &dstCapacity, "\"");
+    return REPR_CSTR__SnprintfShiftChecked(&dst, &dstCapacity, "\"");
 }
 
 void CStr_ReprToFile(FILE file[static 1], char const *str) {
@@ -131,24 +131,24 @@ void CStr_ReprToFile(FILE file[static 1], char const *str) {
         return;
     }
 
-    REPR_CSTR_CallChecked(fprintf, (file, "\""));
+    REPR_CSTR__CallChecked(fprintf, (file, "\""));
 
     for (unsigned char c = *str; '\0' != *str; str++, c = *str) {
         char const *escapeSequence;
         if (NULL != (escapeSequence = REPR_CSTR_ESCAPE_SEQUENCES[c])) {
-            REPR_CSTR_CallChecked(fprintf, (file, "%s", escapeSequence));
+            REPR_CSTR__CallChecked(fprintf, (file, "%s", escapeSequence));
             continue;
         }
 
         if (isprint(c)) {
-            REPR_CSTR_CallChecked(fputc, (c, file));
+            REPR_CSTR__CallChecked(fputc, (c, file));
             continue;
         }
 
-        REPR_CSTR_CallChecked(fprintf, (file, "\\x%02hhx", c));
+        REPR_CSTR__CallChecked(fprintf, (file, "\\x%02hhx", c));
     }
 
-    REPR_CSTR_CallChecked(fprintf, (file, "\""));
+    REPR_CSTR__CallChecked(fprintf, (file, "\""));
 }
 
 #endif // REPR_CSTR_IMPLEMENTATION
