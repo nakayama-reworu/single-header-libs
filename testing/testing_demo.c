@@ -34,9 +34,9 @@ Testing_Fact(strlen_returns_correct_length) {
 }
 
 Testing_AllTests = {
-        Testing_Test(one_plus_one_equals_two),
-        Testing_Test(always_false),
-        Testing_Test(strlen_returns_correct_length),
+        Testing_AddTest(one_plus_one_equals_two),
+        Testing_AddTest(always_false),
+        Testing_AddTest(strlen_returns_correct_length),
 };
 
-Testing_RunAllTests()
+Testing_RunAllTests();

@@ -47,7 +47,7 @@ do {                                                                            
     }                                                                               \
 } while (0)
 
-#define Testing_Test(name) (TestCase) { .Name = #name, .Implementation = name }
+#define Testing_AddTest(name) (TestCase) { .Name = #name, .Implementation = name }
 
 #define Testing_AllTests static const TestCase tests[]
 
