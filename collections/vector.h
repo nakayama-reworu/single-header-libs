@@ -89,19 +89,52 @@ do {                                                                        \
     _vecPtr_pushBack->Items[_vecPtr_pushBack->Size++] = (Val);              \
 } while (0)
 
-#define Vector_TryPopBack(VecPtr, ValuePtr)                         \
-({                                                                  \
-    __auto_type _vec_try_pop_back = (VecPtr);                       \
-    bool _ok = false;                                               \
-    if (_vec_try_pop_back->Size > 0) {                              \
-        *(ValuePtr) =                                               \
-            _vec_try_pop_back->Items[--_vec_try_pop_back->Size];    \
-        _ok = true;                                                 \
-    }                                                               \
-    _ok;                                                            \
+#define Vector_TryPopBack(VecPtr, ValuePtr)                                 \
+({                                                                          \
+    __auto_type _vecPtr_tryPopBack = (VecPtr);                              \
+    typeof(_vecPtr_tryPopBack->Items) _valuePtr_tryPopBack = (ValuePtr);    \
+    bool _ok = false;                                                       \
+    if (_vecPtr_tryPopBack->Size > 0) {                                     \
+        --_vecPtr_tryPopBack->Size;                                         \
+        if (NULL != _valuePtr_tryPopBack) {                                 \
+            *_valuePtr_tryPopBack =                                         \
+                _vecPtr_tryPopBack->Items[_vecPtr_tryPopBack->Size];        \
+        }                                                                   \
+        _ok = true;                                                         \
+    }                                                                       \
+    _ok;                                                                    \
 })
 
+#define Vector_Reverse(VecPtr)                                                      \
+do {                                                                                \
+    __auto_type _vecPtr_reverse = (VecPtr);                                         \
+    __auto_type _low_reverse = _vecPtr_reverse->Items;                              \
+    __auto_type _high_reverse = _vecPtr_reverse->Items + _vecPtr_reverse->Size - 1; \
+    while (_low_reverse < _high_reverse) {                                          \
+        __auto_type _tmp = *_low_reverse;                                           \
+        *_low_reverse = *_high_reverse;                                             \
+        *_high_reverse = _tmp;                                                      \
+        _low_reverse++;                                                             \
+        _high_reverse--;                                                            \
+    }                                                                               \
+} while (0)
+
 #define Vector_IsEmpty(Vec) (0 == (Vec).Size)
+
+#define Vector_At(Vec, Index)                   \
+({                                              \
+    __auto_type _vec_at = (Vec);                \
+    long long _idx = (Index);                   \
+    long long _sz = _vec_at.Size;               \
+    typeof(_vec_at.Items[0]) *_value = NULL;    \
+    if (0 <= _idx && _idx < _sz) {              \
+        _value = _vec_at.Items + _idx;          \
+    }                                           \
+    if (-_sz <= _idx && _idx < 0) {             \
+        _value = _vec_at.Items + _sz + _idx;    \
+    }                                           \
+    _value;                                     \
+})
 
 #define Vector_Clear(VecPtr) do { (VecPtr)->Size = 0; } while (0)
 

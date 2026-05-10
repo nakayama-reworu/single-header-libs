@@ -139,6 +139,17 @@ Testing_Fact(TryPopBack_returns_false_for_empty_vector) {
     Testing_Assert(false == Vector_TryPopBack(&sut, &value), "expected TryPopBack to return false for empty vector");
 }
 
+Testing_Fact(TryPopBack_discards_elements_if_ValuePtr_is_NULL) {
+    IntVector sut = Vector_Of(IntVector, 1, 2, 3);
+    size_t const initialSize = sut.Size;
+
+    Vector_TryPopBack(&sut, NULL);
+
+    Testing_Assert(initialSize - 1 == sut.Size, "expected size to be decreased by 1");
+
+    Vector_Free(&sut);
+}
+
 Testing_Fact(TryPopBack_returns_elements_in_reverse_order) {
     IntVector sut = Vector_Empty(IntVector);
 
@@ -160,7 +171,18 @@ Testing_Fact(TryPopBack_returns_elements_in_reverse_order) {
     Vector_Free(&sut);
 }
 
-Testing_Fact(Empty_returns_true_for_empty_vector) {
+Testing_Fact(Reverse_reverses_order_of_elements) {
+    IntVector sut = Vector_Of(IntVector, 1, 2, 3, 4, 5, 6);
+    int const nums[] = {6, 5, 4, 3, 2, 1};
+
+    Vector_Reverse(&sut);
+
+    Testing_Assert(0 == memcmp(sut.Items, nums, sut.Size * sizeof(int)), "wrong contents");
+
+    Vector_Free(&sut);
+}
+
+Testing_Fact(IsEmpty_returns_true_for_empty_vector) {
     IntVector sut = Vector_Empty(IntVector);
 
     Testing_Assert(Vector_IsEmpty(sut), "expected Empty to return true");
@@ -168,7 +190,7 @@ Testing_Fact(Empty_returns_true_for_empty_vector) {
     Vector_Free(&sut);
 }
 
-Testing_Fact(Empty_returns_false_for_non_empty) {
+Testing_Fact(IsEmpty_returns_false_for_non_empty) {
     IntVector sut = Vector_Empty(IntVector);
 
     Vector_PushBack(&sut, 1);
@@ -180,7 +202,7 @@ Testing_Fact(Empty_returns_false_for_non_empty) {
     Vector_Free(&sut);
 }
 
-Testing_Fact(Empty_returns_true_for_vector_with_all_elements_removed) {
+Testing_Fact(IsEmpty_returns_true_for_vector_with_all_elements_removed) {
     IntVector sut = Vector_Empty(IntVector);
 
     Vector_PushBack(&sut, 1);
@@ -195,7 +217,7 @@ Testing_Fact(Empty_returns_true_for_vector_with_all_elements_removed) {
     Vector_Free(&sut);
 }
 
-Testing_Fact(Empty_returns_true_after_Clear) {
+Testing_Fact(IsEmpty_returns_true_after_Clear) {
     IntVector sut = Vector_Empty(IntVector);
 
     Vector_PushBack(&sut, 1);
@@ -207,6 +229,33 @@ Testing_Fact(Empty_returns_true_after_Clear) {
     Testing_Assert(Vector_IsEmpty(sut), "expected Empty to return true");
 
     Vector_Free(&sut);
+}
+
+Testing_Fact(At_returns_pointer_to_element_for_valid_positive_index) {
+    IntVector const sut = Vector_FromArray(IntVector , ((int[]) {1, 2, 3, 4, 5, 6}));
+
+    for (size_t i = 0; i < sut.Size; i++) {
+        int const *const it = Vector_At(sut, i);
+        Testing_Assert(&sut.Items[i] == it, "At returned wrong pointer");
+    }
+}
+
+Testing_Fact(At_returns_pointer_to_element_for_valid_negative_index) {
+    IntVector const sut = Vector_FromArray(IntVector , ((int[]) {1, 2, 3, 4, 5, 6}));
+
+    for (int i = -(int) sut.Size; i <= -1; i++) {
+        int const *const it = Vector_At(sut, i);
+        Testing_Assert(&sut.Items[sut.Size + i] == it, "At returned wrong pointer");
+    }
+}
+
+Testing_Fact(At_returns_NULL_for_invalid_index) {
+    IntVector const sut = Vector_FromArray(IntVector , ((int[]) {1, 2, 3, 4, 5, 6}));
+
+    Testing_Assert(NULL == Vector_At(sut, sut.Size), "expected NULL for out of bounds index");
+    Testing_Assert(NULL == Vector_At(sut, -(int) sut.Size - 1), "expected NULL for out of bounds index");
+    Testing_Assert(NULL == Vector_At(sut, 42), "expected NULL for out of bounds index");
+    Testing_Assert(NULL == Vector_At(sut, -42), "expected NULL for out of bounds index");
 }
 
 Testing_AllTests = {
@@ -221,11 +270,16 @@ Testing_AllTests = {
         Testing_AddTest(PushBack_appends_elements),
         Testing_AddTest(Free_sets_size_and_capacity_to_0),
         Testing_AddTest(TryPopBack_returns_false_for_empty_vector),
+        Testing_AddTest(TryPopBack_discards_elements_if_ValuePtr_is_NULL),
         Testing_AddTest(TryPopBack_returns_elements_in_reverse_order),
-        Testing_AddTest(Empty_returns_true_for_empty_vector),
-        Testing_AddTest(Empty_returns_false_for_non_empty),
-        Testing_AddTest(Empty_returns_true_for_vector_with_all_elements_removed),
-        Testing_AddTest(Empty_returns_true_after_Clear),
+        Testing_AddTest(Reverse_reverses_order_of_elements),
+        Testing_AddTest(IsEmpty_returns_true_for_empty_vector),
+        Testing_AddTest(IsEmpty_returns_false_for_non_empty),
+        Testing_AddTest(IsEmpty_returns_true_for_vector_with_all_elements_removed),
+        Testing_AddTest(IsEmpty_returns_true_after_Clear),
+        Testing_AddTest(At_returns_pointer_to_element_for_valid_positive_index),
+        Testing_AddTest(At_returns_pointer_to_element_for_valid_negative_index),
+        Testing_AddTest(At_returns_NULL_for_invalid_index),
 };
 
 Testing_RunAllTests();

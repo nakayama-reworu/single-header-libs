@@ -178,7 +178,9 @@ struct {                \
 * [Vector_Of](#vector_of)
 * [Vector_PushBack](#vector_pushback)
 * [Vector_TryPopBack](#vector_trypopback)
+* [Vector_Reverse](#vector_reverse)
 * [Vector_IsEmpty](#vector_isempty)
+* [Vector_At](#vector_at)
 * [Vector_Clear](#vector_clear)
 
 #### Vector_Empty
@@ -242,11 +244,23 @@ If vector at `VecPtr` contains elements, copy last element to
 `ValuePtr`, decrement `Size` and return `true`. If vector at `VecPtr`
 is empty, return `false`.
 
+#### Vector_Reverse
+```c
+#define Vector_Reverse(VecPtr)
+```
+Reverse the order of elements in a vector.
+
 #### Vector_IsEmpty
 ```c
 #define Vector_IsEmpty(Vec)
 ```
 Returns `true` iff `Vec` contains no elements.
+
+#### Vector_At
+```c
+#define Vector_At(Vec, Index)
+```
+See [Span_At](#span_at).
 
 #### Vector_Clear
 ```c
