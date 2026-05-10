@@ -50,6 +50,8 @@ char *StringBuilder_ToCStr(StringBuilder builder);
 })
 
 void StringBuilder_Free(StringBuilder *builder) {
+    if (NULL == builder) { return; }
+
     free(builder->Chars);
     *builder = StringBuilder_Empty();
 }
