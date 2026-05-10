@@ -248,8 +248,28 @@ Set `VecPtr->Size` to `0`. Does not free any memory.
 
 ## Map
 
+[map.h](map.h), [map_test.c](map_test.c)
+
 A collections of key-value pairs.
+
+### Type constructors
+
+_TODO_
+
+### Functions
+
+_TODO_
 
 ## List
 
+[list.h](list.h), [list_test.c](list_test.c)
+
 A singly linked list.
+
+### Type constructors
+
+_TODO_
+
+### Functions
+
+_TODO_
