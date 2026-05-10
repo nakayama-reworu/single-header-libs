@@ -417,15 +417,15 @@ struct {                \
 
 ### Functions
 
-* [List_Empty](#list-empty)
-* [List_Free](#list-free)
-* [List_PushFront](#list-pushfront)
-* [List_PushBack](#list-pushback)
-* [List_TryPopFront](#list-trypopfront)
-* [List_TryPopBack](#list-trypopback)
-* [List_ForEach](#list-foreach)
-* [List_At](#list-at)
-* [List_IsEmpty](#list-isempty)
+* [List_Empty](#list_empty)
+* [List_Free](#list_free)
+* [List_PushFront](#list_pushfront)
+* [List_PushBack](#list_pushback)
+* [List_TryPopFront](#list_trypopfront)
+* [List_TryPopBack](#list_trypopback)
+* [List_ForEach](#list_foreach)
+* [List_At](#list_at)
+* [List_IsEmpty](#list_isempty)
 
 #### List_Empty
 ```c
