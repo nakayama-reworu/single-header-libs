@@ -396,12 +396,100 @@ Return `true` iff `Map_` contains no entries.
 
 [list.h](list.h), [list_test.c](list_test.c)
 
-A singly linked list.
+A doubly linked list.
 
 ### Type constructors
 
-_TODO_
+* [List](#list-1)
+
+#### List
+```c
+#define List(TValue)    \
+struct {                \
+    size_t Size;        \
+    struct {            \
+        TValue Value;   \
+        void *Prev;     \
+        void *Next;     \
+    } *Head, *Tail;     \
+}
+```
 
 ### Functions
 
-_TODO_
+* [List_Empty](#list-empty)
+* [List_Free](#list-free)
+* [List_PushFront](#list-pushfront)
+* [List_PushBack](#list-pushback)
+* [List_TryPopFront](#list-trypopfront)
+* [List_TryPopBack](#list-trypopback)
+* [List_ForEach](#list-foreach)
+* [List_At](#list-at)
+* [List_IsEmpty](#list-isempty)
+
+#### List_Empty
+```c
+#define List_Empty(ListType)
+```
+Construct an empty list of type `ListType`
+
+#### List_Free
+```c
+#define List_Free(ListPtr) 
+```
+Free a list and set its value to `List_Empty(typeof(*ListPtr))`.
+
+#### List_PushFront
+```c
+#define List_PushFront(ListPtr, Val)
+```
+Prepend an element.
+
+#### List_PushBack
+```c
+#define List_PushBack(ListPtr, Val)
+```
+Append an element.
+
+#### List_TryPopFront
+```c
+#define List_TryPopFront(ListPtr, ValuePtr)
+```
+If the list is empty, return `false`.
+
+Otherwise, remove the first node, decrease size and, if `ValuePtr` is
+not `NULL`, set `*ValuePtr` to the value contained in the removed node,
+and return `true`.
+
+#### List_TryPopBack
+```c
+#define List_TryPopBack(ListPtr, ValuePtr) 
+```
+If the list is empty, return `false`.
+
+Otherwise, remove the last node, decrease size and, if `ValuePtr` is
+not `NULL`, set `*ValuePtr` to the value contained in the removed node,
+and return `true`.
+
+#### List_ForEach
+```c
+#define List_ForEach(ValuePtr, List_)
+```
+Expands into a `for` loop header that will iterate over all elements
+of the list.
+
+#### List_At
+```c
+#define List_At(List_, Index)
+```
+If `0 <= Index < List_.Size` is true, return pointer to value at `Index`.
+
+If `-List_.Size <= Index <= -1` is true, return pointer to value at `List_.Size + Index`.
+
+Return `NULL` otherwise.
+
+#### List_IsEmpty
+```c
+#define List_IsEmpty(List_)
+```
+Return `true` iff `List_` contains no elements.
