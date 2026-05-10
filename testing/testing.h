@@ -26,9 +26,11 @@ typedef struct {
     const char *const test_name;
 } TestCase;
 
-#define Test_Fact(name) void name(size_t test_no, const char* test_name, bool* ok)
+#define test_nameof(it) ({(void) it; #it;})
 
-#define Test_Assert(assertion, format, ...)                                         \
+#define test_fact(name) void name(size_t test_no, const char* test_name, bool* ok)
+
+#define test_assert(assertion, format, ...)                                         \
 do {                                                                                \
     const bool success = (assertion);                                               \
     if (false == success) {                                                         \
@@ -45,11 +47,11 @@ do {                                                                            
     }                                                                               \
 } while (0)
 
-#define Test_Case(name) (TestCase) { .test_name = #name, .test_body = name }
+#define test_case(name) (TestCase) { .test_name = #name, .test_body = name }
 
-#define Test_AllTests const TestCase tests[]
+#define test_all_tests static const TestCase tests[]
 
-#define Test_RunAllTests(...)                                   \
+#define test_run_all_tests(...)                                 \
 int main(void) {                                                \
     const size_t tests_count = sizeof(tests) / sizeof(*tests);  \
     size_t failed = 0;                                          \

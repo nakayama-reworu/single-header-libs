@@ -1,11 +1,12 @@
 #define TEST_FILE_NAME_ONLY
 #define TEST_SUCCESS_STREAM stdout
 #define TEST_FAILURE_STREAM stdout
+
 #include "testing.h"
 
 #include <string.h>
 
-Test_Fact(one_plus_one_equals_two) {
+test_fact(one_plus_one_equals_two) {
     // arrange
     int a = 1, b = 1;
 
@@ -13,26 +14,29 @@ Test_Fact(one_plus_one_equals_two) {
     int c = a + b;
 
     // assert
-    Test_Assert(c == 2, "math does not work");
+    test_assert(c == 2, "math does not work");
 }
 
-Test_Fact(always_false) {
-    Test_Assert(1 == 2, "expected %d to be equal %d", 1, 2);
+test_fact(always_false) {
+    int a = 1, b = 2;
+
+    test_assert(a == a, "expected %s=%d to be equal %s=%d", test_nameof(a), a, test_nameof(a), a);
+    test_assert(a == b, "expected %s=%d to be equal %s=%d", test_nameof(a), a, test_nameof(b), b);
 }
 
-Test_Fact(strlen_returns_correct_length) {
-    const char* s = "abc";
+test_fact(strlen_returns_correct_length) {
+    const char *s = "abc";
     const size_t expected = 3;
 
     const size_t length = strlen(s);
 
-    Test_Assert(length == expected, "expected length to be %zu but was %zu", expected, length);
+    test_assert(length == expected, "expected length to be %zu but was %zu", expected, length);
 }
 
-Test_AllTests = {
-        Test_Case(one_plus_one_equals_two),
-        Test_Case(always_false),
-        Test_Case(strlen_returns_correct_length),
+test_all_tests = {
+        test_case(one_plus_one_equals_two),
+        test_case(always_false),
+        test_case(strlen_returns_correct_length),
 };
 
-Test_RunAllTests()
+test_run_all_tests()
