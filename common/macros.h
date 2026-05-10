@@ -20,4 +20,7 @@
 #define LOG_ERROR(Message, ...) LOG(ERROR, Message, ##__VA_ARGS__)
 #define LOG_NULL(It)            LOG_ERROR(NAME_OF(It) " is NULL")
 
+#define TYPE_OF_FIRST(First, ...)       typeof(First)
+#define ARRAY_LITERAL_FROM_VA_ARGS(...) ((TYPE_OF_FIRST(__VA_ARGS__)[]) {__VA_ARGS__})
+
 #endif //PLAYGROUND_MACROS_H
