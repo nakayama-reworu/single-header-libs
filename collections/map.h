@@ -64,7 +64,11 @@ struct {                            \
 #define Map_Free(MapPtr)                    \
 do {                                        \
     free((MapPtr)->Entries);                \
-    *(MapPtr) = (typeof(*(MapPtr))) { 0 };  \
+    *(MapPtr) = Map_Empty(                  \
+        typeof(*(MapPtr)),                  \
+        (MapPtr)->Hash,                     \
+        (MapPtr)->KeyEquals                 \
+    );                                      \
 } while (0)
 
 #define MAP__FindSlot(Map_, Key_)                                                       \
