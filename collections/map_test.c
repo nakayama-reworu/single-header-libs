@@ -6,6 +6,9 @@
 
 #include "testing/testing.h"
 
+typedef Map(int, int) IntIntMap;
+typedef Map(char const *, int) StringIntMap;
+
 size_t StrHash(char const *s) {
     unsigned long hash = 5381;
     int c;
@@ -32,8 +35,14 @@ size_t IntHashConst(int unused) {
 
 bool IntEquals(int a, int b) { return a == b; }
 
+Testing_Fact(Empty_returns_map_with_Size_set_to_0) {
+    IntIntMap sut = Map_Empty(IntIntMap, IntHashIdentity, IntEquals);
+
+    Testing_Assert(0 == sut.Size, "expected size to be 0");
+}
+
 Testing_Fact(Put_associates_key_with_value) {
-    Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
+    IntIntMap sut = Map_Empty(IntIntMap, IntHashIdentity, IntEquals);
 
     int const key = 42;
     int const value = 1337;
@@ -54,8 +63,43 @@ Testing_Fact(Put_associates_key_with_value) {
     Map_Free(&sut);
 }
 
+Testing_Fact(Of_creates_a_map_with_given_key_value_pairs) {
+    IntIntMap sut = Map_Of(
+            IntIntMap, IntHashIdentity, IntEquals,
+            { .Key = 1, .Value = 2 },
+            { .Key = 2, .Value = 7 },
+            { .Key = 3, .Value = -42 },
+            { .Key = 1, .Value = -19 }
+    );
+
+    int key = 1;
+    int expectedValue = -19;
+    int gotValue;
+
+    Testing_Assert(
+            expectedValue == (gotValue = Map_GetOrDefault(sut, key, 0)),
+            "expected value %d at key %d but got %d", expectedValue, key, gotValue
+    );
+
+    key = 2;
+    expectedValue = 7;
+    Testing_Assert(
+            expectedValue == (gotValue = Map_GetOrDefault(sut, key, 0)),
+            "expected value %d at key %d but got %d", expectedValue, key, gotValue
+    );
+
+    key = 3;
+    expectedValue = -42;
+    Testing_Assert(
+            expectedValue == (gotValue = Map_GetOrDefault(sut, key, 0)),
+            "expected value %d at key %d but got %d", expectedValue, key, gotValue
+    );
+
+    Map_Free(&sut);
+}
+
 Testing_Fact(Put_overwrites_values_if_called_with_same_key) {
-    Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
+    IntIntMap sut = Map_Empty(IntIntMap, IntHashIdentity, IntEquals);
 
     int const key = 42;
     int const value = 1337;
@@ -79,7 +123,7 @@ Testing_Fact(Put_overwrites_values_if_called_with_same_key) {
 }
 
 Testing_Fact(Put_only_updates_key_when_it_is_first_inserted) {
-    Map_Of(char const *, int) sut = {.Hash = StrHash, .KeyEquals = StrEquals};
+    StringIntMap sut = Map_Empty(StringIntMap, StrHash, StrEquals);
 
     char const *key = "Hello";
     char const *newKey = strdup(key);
@@ -108,7 +152,7 @@ Testing_Fact(Put_only_updates_key_when_it_is_first_inserted) {
 }
 
 Testing_Fact(Put_handles_collisions_with_constant_hash) {
-    Map_Of(int, int) sut = {.Hash = IntHashConst, .KeyEquals = IntEquals};
+    IntIntMap sut = Map_Empty(IntIntMap, IntHashConst, IntEquals);
 
     size_t const expectedSize = 42;
     for (size_t i = 0; i < expectedSize; i++) {
@@ -121,7 +165,7 @@ Testing_Fact(Put_handles_collisions_with_constant_hash) {
 }
 
 Testing_Fact(Size_is_equal_to_number_of_distinct_keys_inserted) {
-    Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
+    IntIntMap sut = Map_Empty(IntIntMap, IntHashIdentity, IntEquals);
 
     size_t const expectedSize = 42;
     for (size_t i = 0; i < expectedSize; i++) {
@@ -134,7 +178,7 @@ Testing_Fact(Size_is_equal_to_number_of_distinct_keys_inserted) {
 }
 
 Testing_Fact(Size_is_not_increased_when_Put_is_called_with_existing_key) {
-    Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
+    IntIntMap sut = Map_Empty(IntIntMap, IntHashIdentity, IntEquals);
 
     for (size_t i = 0; i < 100; i++) {
         Map_Put(&sut, 42, i);
@@ -146,7 +190,7 @@ Testing_Fact(Size_is_not_increased_when_Put_is_called_with_existing_key) {
 }
 
 Testing_Fact(At_returns_NULL_if_key_does_not_exist) {
-    Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
+    IntIntMap sut = Map_Empty(IntIntMap, IntHashIdentity, IntEquals);
 
     Map_Put(&sut, 1, 1);
     Map_Put(&sut, 2, 4);
@@ -158,7 +202,7 @@ Testing_Fact(At_returns_NULL_if_key_does_not_exist) {
 }
 
 Testing_Fact(At_returns_pointer_to_value_for_existing_key) {
-    Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
+    IntIntMap sut = Map_Empty(IntIntMap, IntHashIdentity, IntEquals);
 
     Map_Put(&sut, 1, 1);
     Map_Put(&sut, 2, 4);
@@ -175,7 +219,7 @@ Testing_Fact(At_returns_pointer_to_value_for_existing_key) {
 }
 
 Testing_Fact(TryGet_returns_false_for_empty_map) {
-    Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
+    IntIntMap sut = Map_Empty(IntIntMap, IntHashIdentity, IntEquals);
 
     int value;
     Testing_Assert(false == Map_TryGet(sut, 42, &value), "expected TryGet to return false for empty map");
@@ -184,7 +228,7 @@ Testing_Fact(TryGet_returns_false_for_empty_map) {
 }
 
 Testing_Fact(TryGet_returns_false_when_key_does_not_exist) {
-    Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
+    IntIntMap sut = Map_Empty(IntIntMap, IntHashIdentity, IntEquals);
 
     size_t const expectedSize = 42;
     for (size_t i = 0; i < expectedSize; i++) {
@@ -201,7 +245,7 @@ Testing_Fact(TryGet_returns_false_when_key_does_not_exist) {
 }
 
 Testing_Fact(TryGet_returns_false_when_hash_exists_but_key_does_not) {
-    Map_Of(int, int) sut = {.Hash = IntHashConst, .KeyEquals = IntEquals};
+    IntIntMap sut = Map_Empty(IntIntMap, IntHashConst, IntEquals);
 
     Map_Put(&sut, 10, 0);
 
@@ -213,7 +257,7 @@ Testing_Fact(TryGet_returns_false_when_hash_exists_but_key_does_not) {
 }
 
 Testing_Fact(TryGet_retrieves_all_inserted_values_with_distinct_keys) {
-    Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
+    IntIntMap sut = Map_Empty(IntIntMap, IntHashIdentity, IntEquals);
 
     int const keys[] = {1, 2, 4, 8, 16, 32, 64, 128, 256};
     int const values[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
@@ -233,7 +277,7 @@ Testing_Fact(TryGet_retrieves_all_inserted_values_with_distinct_keys) {
 }
 
 Testing_Fact(GetOrDefault_returns_value_if_key_exists) {
-    Map_Of(char const *, int) sut = {.Hash = StrHash, .KeyEquals = StrEquals};
+    StringIntMap sut = Map_Empty(StringIntMap, StrHash, StrEquals);
 
     char const *const key = "Hello";
     int const value = 42;
@@ -245,7 +289,7 @@ Testing_Fact(GetOrDefault_returns_value_if_key_exists) {
 }
 
 Testing_Fact(GetOrDefault_returns_default_if_key_does_not_exist) {
-    Map_Of(char const *, int) sut = {.Hash = StrHash, .KeyEquals = StrEquals};
+    StringIntMap sut = Map_Empty(StringIntMap, StrHash, StrEquals);
 
     char const *const key = "Hello";
     int const value = 42;
@@ -257,7 +301,7 @@ Testing_Fact(GetOrDefault_returns_default_if_key_does_not_exist) {
 }
 
 Testing_Fact(ForEach_never_executes_body_for_empty_list) {
-    Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
+    IntIntMap sut = Map_Empty(IntIntMap, IntHashIdentity, IntEquals);
 
     int bodyExecuted = false;
     Map_ForEach(pValue, sut) {
@@ -271,7 +315,7 @@ Testing_Fact(ForEach_never_executes_body_for_empty_list) {
 }
 
 Testing_Fact(ForEach_iterates_over_all_elements) {
-    Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
+    IntIntMap sut = Map_Empty(IntIntMap, IntHashIdentity, IntEquals);
 
     int const keys[] = {1, 2, 4, 8, 16, 32, 64, 128, 256};
     int const values[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
@@ -307,24 +351,30 @@ Testing_Fact(ForEach_iterates_over_all_elements) {
     Map_Free(&sut);
 }
 
-Testing_Fact(Empty_returns_true_for_empty_map) {
-    Map_Of(int, int) sut = {0};
+Testing_Fact(IsEmpty_returns_true_for_empty_map) {
+    IntIntMap sut = Map_Empty(IntIntMap, IntHashIdentity, IntEquals);
 
-    Testing_Assert(Map_Empty(sut), "expected Empty to return true");
+    Testing_Assert(Map_IsEmpty(sut), "expected Empty to return true");
 
     Map_Free(&sut);
 }
 
-Testing_Fact(Empty_returns_false_for_non_empty_map) {
-    Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
-    Map_Put(&sut, 1, 2);
+Testing_Fact(IsEmpty_returns_false_for_non_empty_map) {
+    IntIntMap sut = Map_Of(
+            IntIntMap, IntHashIdentity, IntEquals,
+            { .Key = 1, .Value = 2 },
+            { .Key = 32, .Value = 7 },
+            { .Key = 7, .Value = -19 }
+    );
 
-    Testing_Assert(false == Map_Empty(sut), "expected Empty to return false");
+    Testing_Assert(false == Map_IsEmpty(sut), "expected Empty to return false");
 
     Map_Free(&sut);
 }
 
 Testing_AllTests = {
+        Testing_AddTest(Empty_returns_map_with_Size_set_to_0),
+        Testing_AddTest(Of_creates_a_map_with_given_key_value_pairs),
         Testing_AddTest(Put_associates_key_with_value),
         Testing_AddTest(Put_handles_collisions_with_constant_hash),
         Testing_AddTest(Put_overwrites_values_if_called_with_same_key),
@@ -341,8 +391,8 @@ Testing_AllTests = {
         Testing_AddTest(GetOrDefault_returns_default_if_key_does_not_exist),
         Testing_AddTest(ForEach_never_executes_body_for_empty_list),
         Testing_AddTest(ForEach_iterates_over_all_elements),
-        Testing_AddTest(Empty_returns_true_for_empty_map),
-        Testing_AddTest(Empty_returns_false_for_non_empty_map),
+        Testing_AddTest(IsEmpty_returns_true_for_empty_map),
+        Testing_AddTest(IsEmpty_returns_false_for_non_empty_map),
 };
 
 Testing_RunAllTests();
