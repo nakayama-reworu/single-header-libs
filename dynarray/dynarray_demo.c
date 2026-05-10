@@ -128,6 +128,10 @@ void ItemArrayPrint(Item *items, char *end) {
 int main() {
     // Create an empty array
     Item *expression = Array_EmptyOfType(Item);
+    Array_ForEach(_, expression) {
+        LOG_ERROR("This must never be reached");
+    }
+
     ItemArrayPrint(expression, "\n");
 
     // Append single value -> [1]

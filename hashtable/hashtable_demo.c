@@ -34,6 +34,10 @@ int main(void) {
     }
 
     Pair(int, int) **frequencies = HashTable(typeof(**frequencies), IntHash, memcmp);
+    HashTable_ForEach(_, frequencies) {
+        LOG_ERROR("This must never be reached");
+    }
+
     Array_ForEach(n, numbers)  {
         int *count;
         if (NULL == (count = HashTable_At(frequencies, n))) {
