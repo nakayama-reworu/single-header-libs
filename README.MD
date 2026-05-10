@@ -1,198 +1,27 @@
 # Single Header Libraries
 
-### Collections
+## Collections
+
+[Collections README](collections/README.MD)
 
 Generic collections with operations implemented as macros.
 
-Include [call_checked.h](call_checked.h)
-before including the collection header.
+* [Span](collections/README.MD#span)
+* [Vector](collections/README.MD#vector)
+* [Map](collections/README.MD#map)
+* [List](collections/README.MD#list)
 
-* [Vector](#vector)
-* [Linked List](#linked-list)
-* [Map](#map)
+## Strings
 
-### Strings
+[Strings README](strings/README.MD)
 
-See [readme for strings](strings/README.MD).
+String utilities.
 
-### Other
+* [String representation](strings/README.MD#c-style-string-representation)
+* [StringBuilder](strings/README.MD#string-builder)
 
-* [Header-only testing micro-framework](#testing)
+## Testing
 
-## Collections
+A minimal header-only unit-testing library.
 
-### Vector
-
-[vector.h](collections/vector.h), [vector_test.c](collections/vector_test.c)
-
-_Interface:_
-
- * `Vector_Of(TValue)` - construct a vector type;
- * `Vector_Free(VecPtr)` - free a vector;
- * `Vector_PushBack(VecPtr, Val)` - append an element;
- * `Vector_TryPopBack(VecPtr, ValuePtr)` - copy last value to
-location pointed to by `ValuePtr`, decrease `Size` by `1` and 
-return `true` if vector contains elements, and `false` otherwise;
- * `Vector_At(Vec, Index) -> TValue*` - return pointer to element at `Index`:
-   * Element at `Index` if `0 <= Index < Size`;
-   * Element at `Size - Index` if `-Size <= Index < 0` (`Index`th element from the end);
-   * `NULL` otherwise.
- * `Vector_ForEach(ValuePtr, Vec)` - generates a `for` header to
- iterate over vector elements;
- * `Vector_Empty(Vec) -> bool` - `true` iff vector is empty;
- * `Vector_Clear(VecPtr)` - set `Size` to `0`;
- * `Vector_Any(Vec, Value, PredicateExpr) -> bool` - `true` iff `PredicateExpr`
-is true for any element;
- * `Vector_Slice(TSlice, Vec, Start, End) -> TSlice`, 
-`Vector_SliceFrom(TSlice, Vec, Start) -> TSlice`,
-`Vector_SliceTo(TSlice, Vec, End) -> TSlice` - get a mutable view
-of sub-vector.
-
-Simple dynamic array of type `T`. Any struct with fields `size_t Size`, 
-`size_t Capacity` and `T *Items` is compatible with `Vector_*` operations.
-
-Macro `Vector_Of(T)` expands into definition of an
-anonymous struct with fields specified above.
-
-Usage example:
-```c
-Vector_Of(char const *) words = {0};
-
-Vector_PushBack(&words, "A");
-Vector_PushBack(&words, "quick");
-Vector_PushBack(&words, "brown");
-Vector_PushBack(&words, "fox");
-
-Vector_ForEach(valuePtr, words) {
-    printf("%s\n", *valuePtr);
-}
-
-char const *word;
-while (Vector_TryPopBack(&words, &word)) {
-    printf("%s\n", word);
-}
-
-printf("last=%s\n", *Vector_At(words, -1));
-printf("contains fox? %s\n", Vector_Any(words, it, 0 == strcmp(it, "fox")) ? "yes" : "no");
-
-Vector_Free(&words);
-```
-
-### Linked List
-
-[list.h](collections/list.h), [list_test.c](collections/list_test.c)
-
-_Interface:_
-
- * `List_Of(TValue)` - construct a list node type;
- * `List_Free(HeadPtrPtr)` - free a list;
- * `List_PushFront(HeadPtrPtr, Val)` - prepend a value;
- * `List_TryPopFront(HeadPtrPtr, ValuePtr) -> TValue` - returns `true`, 
-copies the value in the first node to location pointed
-to by `ValuePtr` and removes the first node if list is not empty,
-returns `false` otherwise;
- * `List_PushBack(HeadPtrPtr, TailPtrPtr, Val)` - append an element;
- * `List_ForEach(ValuePtr, HeadPtr)` - generates a `for` header to
-iterate over list elements;
- * `List_Tail(HeadPtr) -> typeof(HeadPtr)` - returns pointer
-to last node;
- * `List_Size(HeadPtr) -> size_t` - count the number of elements
-in the list;
- * `List_Empty(HeadPtr) -> bool` - returns `true` if list contains
-   values, `false` otherwise.
-
-A singly linked list. A node is a struct `NodeT` that 
-has `T Value` and `NodeT *Next` field.
-
-Macro `List_Of(T)` expands into a definition of a
-suitable struct with a unique name.
-
-Usage example:
-```c
-List_Of(int) *squares = NULL;
-
-List_PushFront(&squares, 9);
-List_PushFront(&squares, 4);
-List_PushFront(&squares, 1);
-
-typeof(squares) /* or auto since C23 */ tail = List_Tail(squares);
-List_PushBack(&squares, &tail, 16);
-List_PushBack(&squares, &tail, 25);
-
-printf("Size=%zu\n", List_Size(squares));
-
-List_ForEach(valuePtr, squares) {
-    printf("%d\n", *valuePtr);
-}
-
-int square;
-while (List_TryPopFront(&squares, &square)) {
-    printf("%d\n", square);
-}
-
-List_Free(&squares);
-```
-
-### Map
-
-[map.h](collections/map.h), [map_test.c](collections/map_test.c)
-
-_Interface:_
-
- * `Map_Of(TKey, TValue)` - construct a map type;
- * `Map_Free(MapPtr)` - free a map;
- * `Map_Put(MapPtr, Key_, Value_)` - put a `Value_` at `Key_`;
- * `Map_At(Map, Key_) -> TValue*` - get a pointer to value at `Key_`
-or `NULL` if `Key_` does not exist;
- * `Map_TryGet(Map, Key_, ValuePtr) -> bool` - if `Key_` is present,
-puts the corresponding value to location `ValuePtr` points to and
-returns `true`, otherwise returns `false`;
- * `Map_GetOrDefault(Map, Key_, DefaultExpr) -> TValue` - returns
-the value at `Key_` if present, value of `DefaultExpr` otherwise;
- * `Map_ForEach(EntryPtr, Map)` - generates a `for` header to 
-iterate over map entries.
- * `Map_Empty(Map) -> bool` - returns `true` if map contains
-values, `false` otherwise.
-
-A map (dictionary) with keys of type `TKey` and values of
-type `TValue`. 
-
-Use macro `Map_Of(TKey, TValue)` to get a definition for a 
-suitable struct. 
-
-When initialising a map, you must set `size_t (*Hash)(TKey)` 
-and `bool (*KeyEquals)(TKey, TKey)` fields.
-
-Usage example:
-```c
-Map_Of(char const *, size_t) frequencies = {
-        .Hash = StrHash,
-        .KeyEquals = StrEquals
-};
-
-char const *words[] = {
-        "A", "quick", "brown", "dog", "jumps", "over", "a",
-        "quick", "brown", "fox", NULL
-};
-char const **p = words;
-while (NULL != *p) {
-    Map_Put(&frequencies, *p, Map_GetOrDefault(frequencies, *p, 0));
-}
-/* or */
-while (NULL != *p) {
-    size_t freq;
-    if (Map_TryGet(frequencies, *p, &freq)) {
-        Map_Put(&frequencies, *p, freq + 1);
-    } else {
-        Map_Put(&frequencies, strdup(*p), 1);
-    }
-}
-
-Map_ForEach(entry, frequencies) {
-    printf("Key=%s Value=%zu\n", entry->Key, entry->Value);
-}
-
-Map_Free(&frequencies);
-```
-
-## Other
+* [Testing](testing/README.MD)
