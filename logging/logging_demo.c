@@ -1,6 +1,6 @@
 #define LOGGING_STREAM stdout
 #define LOGGING_FILE_NAME_ONLY
-#include "logging/logging.h"
+#include "logging.h"
 
 #include <stdlib.h>
 
