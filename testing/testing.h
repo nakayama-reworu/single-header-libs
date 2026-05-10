@@ -19,7 +19,7 @@
 #define TEST_FILE __FILE__
 #endif
 
-typedef void (*Test)(size_t, const char*, bool*);
+typedef void (*Test)(size_t, const char *, bool *);
 
 typedef struct {
     const Test test_body;
@@ -28,17 +28,17 @@ typedef struct {
 
 #define test_nameof(it) ({(void) it; #it;})
 
-#define test_fact(name) void name(size_t test_no, const char* test_name, bool* ok)
+#define test_fact(name) static void name(const size_t __test_no, const char* const __test_name, bool* const __ok)
 
 #define test_assert(assertion, format, ...)                                         \
 do {                                                                                \
     const bool success = (assertion);                                               \
     if (false == success) {                                                         \
-        *ok = false;                                                                \
+        *__ok = false;                                                              \
         fprintf(                                                                    \
             TEST_FAILURE_STREAM,                                                    \
             "[TEST %02zu] FAILED %s\n%s:%d: Assertion '%s' failed, " format "\n",   \
-            test_no, test_name,                                                     \
+            __test_no, __test_name,                                                 \
             TEST_FILE, __LINE__,                                                    \
             #assertion, ##__VA_ARGS__                                               \
         );                                                                          \
