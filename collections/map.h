@@ -131,3 +131,5 @@ for (                                                                           
             ? &((Map).Entries[MAP_CONCAT(_i_, __LINE__)])                                           \
             : NULL                                                                                  \
 )
+
+#define Map_Empty(Map) (0 == (Map).Size)

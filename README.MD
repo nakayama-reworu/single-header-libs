@@ -90,6 +90,21 @@ List_Free(&squares);
 
 [map.h](collections/map.h), [map_test.c](collections/map_test.c)
 
+_Interface:_
+
+ * `Map_Of(TKey, TValue)` - construct a map type;
+ * `Map_Free(MapPtr)` - free a map;
+ * `Map_Put(MapPtr, Key_, Value_)` - put a `Value_` at `Key_`;
+ * `Map_TryGet(Map, Key_, ValuePtr) -> bool` - if `Key_` is present,
+puts the corresponding value to location `ValuePtr` points to and
+returns `true`, otherwise returns `false`;
+ * `Map_GetOrDefault(Map, Key_, DefaultExpr) -> TValue` - returns
+the value at `Key_` if present, value of `DefaultExpr` otherwise;
+ * `Map_ForEach(EntryPtr, Map)` - generates a `for` header to 
+iterate over map entries.
+ * `Map_Empty(Map) -> bool` - returns `true` if map conatains
+values, `false` otherwise.
+
 A map (dictionary) with keys of type `TKey` and values of
 type `TValue`. 
 

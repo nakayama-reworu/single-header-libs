@@ -279,6 +279,23 @@ Testing_Fact(ForEach_iterates_over_all_elements) {
     Map_Free(&sut);
 }
 
+Testing_Fact(Empty_returns_true_for_empty_map) {
+    Map_Of(int, int) sut = {0};
+
+    Testing_Assert(Map_Empty(sut), "expected Empty to return true");
+
+    Map_Free(&sut);
+}
+
+Testing_Fact(Empty_returns_false_for_non_empty_map) {
+    Map_Of(int, int) sut = {.Hash = IntHashIdentity, .KeyEquals = IntEquals};
+    Map_Put(&sut, 1, 2);
+
+    Testing_Assert(false == Map_Empty(sut), "expected Empty to return false");
+
+    Map_Free(&sut);
+}
+
 Testing_AllTests = {
         Testing_AddTest(Put_associates_key_with_value),
         Testing_AddTest(Put_handles_collisions_with_constant_hash),
@@ -294,6 +311,8 @@ Testing_AllTests = {
         Testing_AddTest(GetOrDefault_returns_default_if_key_does_not_exist),
         Testing_AddTest(ForEach_never_executes_body_for_empty_list),
         Testing_AddTest(ForEach_iterates_over_all_elements),
+        Testing_AddTest(Empty_returns_true_for_empty_map),
+        Testing_AddTest(Empty_returns_false_for_non_empty_map),
 };
 
 Testing_RunAllTests();
