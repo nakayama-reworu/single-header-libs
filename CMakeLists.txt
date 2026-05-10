@@ -33,6 +33,16 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(${TESTING_DEMO_NAME} PRIVATE DEBUG)
 endif()
 
+set(SPAN_TEST_NAME ${PROJECT_NAME}-span)
+add_executable(${SPAN_TEST_NAME}
+        collections/span_test.c)
+target_link_libraries(${SPAN_TEST_NAME} m)
+target_compile_options(${SPAN_TEST_NAME} PRIVATE -Wall -Werror -Wextra -Wpointer-arith)
+target_include_directories(${SPAN_TEST_NAME} PRIVATE ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/collections)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(${SPAN_TEST_NAME} PRIVATE DEBUG)
+endif()
+
 set(DYNAMIC_ARRAY_TEST_NAME ${PROJECT_NAME}-vector)
 add_executable(${DYNAMIC_ARRAY_TEST_NAME}
         collections/vector_test.c)
