@@ -37,6 +37,8 @@ struct {                    \
 * [Span_Empty](#spanempty)
 * [Span_FromPtr](#spanfromptr)
 * [Span_FromArray](#spanfromarray)
+* [Span_From](#spanfrom)
+* [Span_Of](#spanof)
 * [Span_Slice](#spanslice)
 * [Span_SliceFrom](#spanslicefrom)
 * [Span_SliceTo](#spansliceto)
@@ -62,6 +64,24 @@ Construct a span of type `SpanType` from memory address.
 ```
 Construct a span of type `SpanType` from automatic array
 or array literal.
+
+#### Span_From
+```c
+#define Span_From(SpanType, Src)
+```
+Construct a span of type `SpanType` from `Src.Items` and 
+`Src.Size`.
+
+#### Span_Of
+```c
+#define Span_Of(SpanType, ...)
+```
+Construct a span of type `SpanType` with given elements.
+
+Example:
+```c
+IntSpan span = Span_Of(IntSpan, 1, 2, 3, 4, 5);
+```
 
 #### Span_Slice
 ```c

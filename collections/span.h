@@ -7,7 +7,8 @@
 #define SPAN__Concat_(A, B)   A ## B
 #define SPAN__Concat(A, B)    SPAN__Concat_(A, B)
 
-#define SPAN__ArrayLength(Array) (sizeof(Array) / sizeof(*(Array)))
+#define SPAN__ArrayLength(Array)        (sizeof(Array) / sizeof(*(Array)))
+#define SPAN__ToArrayLiteral(_0, ...)   ((typeof(_0)[]) {_0, ##__VA_ARGS__})
 
 #define Span(Type)  \
 struct {            \
@@ -26,6 +27,14 @@ struct {                    \
 #define Span_FromPtr(SpanType, Ptr, Count) ((SpanType) {.Items = (Ptr), .Size = (Count)})
 
 #define Span_FromArray(SpanType, Array) Span_FromPtr(SpanType, (Array), SPAN__ArrayLength(Array))
+
+#define Span_From(SpanType, Src)                                \
+({                                                              \
+    __auto_type _src_from = (Src);                              \
+    Span_FromPtr(SpanType, _src_from.Items, _src_from.Size);    \
+})
+
+#define Span_Of(SpanType, ...) Span_FromArray(SpanType, SPAN__ToArrayLiteral(__VA_ARGS__))
 
 #define SPAN__Min(A, B)     \
 ({                          \
