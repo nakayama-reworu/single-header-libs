@@ -22,9 +22,9 @@ CStr_ReprToString(buf, bufSize, s);
 
 ### Functions
 
-* [CStr_ReprSize](#cstrreprsize)
-* [CStr_ReprToString](#cstrreprtostring)
-* [CStr_ReprToFile](#cstrreprtofile)
+* [CStr_ReprSize](#cstr_reprsize)
+* [CStr_ReprToString](#cstr_reprtostring)
+* [CStr_ReprToFile](#cstr_reprtofile)
 
 #### CStr_ReprSize
 ```c
@@ -73,12 +73,12 @@ StringBuilder_Free(&builder);
 
 ### Functions
 
-* [StringBuilder_Empty](#stringbuilderempty)
-* [StringBuilder_Free](#stringbuilderfree)
-* [StringBuilder_Sprintf](#stringbuildersprintf)
-* [StringBuilder_Append](#stringbuilderappend)
-* [StringBuilder_AppendChars](#stringbuilderappendchars)
-* [StringBuilder_ToCStr](#stringbuildertocstr)
+* [StringBuilder_Empty](#stringbuilder_empty)
+* [StringBuilder_Free](#stringbuilder_free)
+* [StringBuilder_Sprintf](#stringbuilder_sprintf)
+* [StringBuilder_Append](#stringbuilder_append)
+* [StringBuilder_AppendChars](#stringbuilder_appendchars)
+* [StringBuilder_ToCStr](#stringbuilder_tocstr)
 
 #### StringBuilder_Empty
 ```c

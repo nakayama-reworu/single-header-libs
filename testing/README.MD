@@ -8,10 +8,10 @@ See [testing_demo.c](testing_demo.c) for a full demo.
 
 ### Declaring and running tests
 
-* [Testing_Fact](#testingfact)
-* [Testing_Assert](#testingassert)
-* [Testing_AllTests](#testingalltests)
-* [Testing_RunAllTests](#testingrunalltests)
+* [Testing_Fact](#testing_fact)
+* [Testing_Assert](#testing_assert)
+* [Testing_AllTests](#testing_alltests)
+* [Testing_RunAllTests](#testing_runalltests)
 
 #### Testing_Fact
 ```c
@@ -66,9 +66,9 @@ Expands into `main` definition that will run tests in
 
 ### Control macros
 
-* [TESTING_SUCCESS_STREAM](#testingsuccessstream)
-* [TESTING_FAILURE_STREAM](#testingfailurestream)
-* [TESTING_FILE_NAME_ONLY](#testingfilenameonly)
+* [TESTING_SUCCESS_STREAM](#testing_success_stream)
+* [TESTING_FAILURE_STREAM](#testing_failure_stream)
+* [TESTING_FILE_NAME_ONLY](#testing_file_name_only)
 
 #### TESTING_SUCCESS_STREAM
 Define before including `testing.h` to set output 

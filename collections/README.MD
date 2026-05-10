@@ -36,17 +36,17 @@ struct {                    \
 
 ### Functions
 
-* [Span_Empty](#spanempty)
-* [Span_FromPtr](#spanfromptr)
-* [Span_FromArray](#spanfromarray)
-* [Span_From](#spanfrom)
-* [Span_Of](#spanof)
-* [Span_Slice](#spanslice)
-* [Span_SliceFrom](#spanslicefrom)
-* [Span_SliceTo](#spansliceto)
-* [Span_IsEmpty](#spanisempty)
-* [Span_At](#spanat)
-* [Span_ForEach](#spanforeach)
+* [Span_Empty](#span_empty)
+* [Span_FromPtr](#span_fromptr)
+* [Span_FromArray](#span_fromarray)
+* [Span_From](#span_from)
+* [Span_Of](#span_of)
+* [Span_Slice](#span_slice)
+* [Span_SliceFrom](#span_slicefrom)
+* [Span_SliceTo](#span_sliceto)
+* [Span_IsEmpty](#span_isempty)
+* [Span_At](#span_at)
+* [Span_ForEach](#span_foreach)
 
 #### Span_Empty
 ```c
@@ -171,15 +171,15 @@ struct {                \
 
 ### Functions
 
-* [Vector_Empty](#vectorempty)
-* [Vector_FromPtr](#vectorfromptr)
-* [Vector_FromArray](#vectorfromarray)
-* [Vector_From](#vectorfrom)
-* [Vector_Of](#vectorof)
-* [Vector_PushBack](#vectorpushback)
-* [Vector_TryPopBack](#vectortrypopback)
-* [Vector_IsEmpty](#vectorisempty)
-* [Vector_Clear](#vectorclear)
+* [Vector_Empty](#vector_empty)
+* [Vector_FromPtr](#vector_fromptr)
+* [Vector_FromArray](#vector_fromarray)
+* [Vector_From](#vector_from)
+* [Vector_Of](#vector_of)
+* [Vector_PushBack](#vector_pushback)
+* [Vector_TryPopBack](#vector_trypopback)
+* [Vector_IsEmpty](#vector_isempty)
+* [Vector_Clear](#vector_clear)
 
 #### Vector_Empty
 ```c
@@ -282,15 +282,15 @@ struct {                            \
 
 ### Functions
 
-* [Map_Empty](#mapempty)
-* [Map_Of](#mapof)
-* [Map_Free](#mapfree)
-* [Map_Put](#mapput)
-* [Map_At](#mapat)
-* [Map_TryGet](#maptryget)
-* [Map_GetOrDefault](#mapgetordefault)
-* [Map_ForEach](#mapforeach)
-* [Map_IsEmpty](#mapisempty)
+* [Map_Empty](#map_empty)
+* [Map_Of](#map_of)
+* [Map_Free](#map_free)
+* [Map_Put](#map_put)
+* [Map_At](#map_at)
+* [Map_TryGet](#map_tryget)
+* [Map_GetOrDefault](#map_getordefault)
+* [Map_ForEach](#map_foreach)
+* [Map_IsEmpty](#map_isempty)
 
 #### Map_Empty
 ```c
