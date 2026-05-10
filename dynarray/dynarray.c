@@ -125,7 +125,7 @@ void Array_FillFrom(void *array, const void *value) {
 }
 
 
-void *Array_AppendFrom(void *array, const void *element) {
+void *Array_WithAppendedFrom(void *array, const void *element) {
     if (NULL == array) {
         LOG_NULL(array);
         return array;
@@ -177,7 +177,7 @@ void *Array_ExtendWithValues(
     }
 
     for (size_t i = 0; i < elements_count; i++) {
-        array = Array_AppendFrom(array, (uint8_t *) data + i * element_size);
+        array = Array_WithAppendedFrom(array, SHIFT(data, i * element_size));
     }
 
     assert(Array_Size(array) == original_size + elements_count);

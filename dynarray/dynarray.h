@@ -36,12 +36,12 @@ void Array_FillFrom(void *array, const void *value);
 
 #define Array_At(Array, I)  ((uint8_t *) (Array) + (I) * Array_ElementSize(Array))
 
-void *Array_AppendFrom(void *array, const void *element);
+void *Array_WithAppendedFrom(void *array, const void *element);
 
 #define ARRAY_LITERAL_ELEMENT_SIZE(ArrayLiteral)    sizeof((ArrayLiteral)[0])
 #define ARRAY_LITERAL_ELEMENTS_COUNT(ArrayLiteral)  (sizeof((ArrayLiteral)) / ARRAY_LITERAL_ELEMENT_SIZE(ArrayLiteral))
 
-#define Array_Append(Array, Value) (Array = Array_AppendFrom((Array), ARRAY_LITERAL_FROM_VA_ARGS(Value)))
+#define Array_Append(array, value) (array = Array_WithAppendedFrom((array), ARRAY_LITERAL_FROM_VA_ARGS(value)))
 
 void *Array_ExtendWithValues(void *array, const void *data, size_t elements_count, size_t element_size);
 

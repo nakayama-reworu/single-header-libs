@@ -126,7 +126,7 @@ void *HashTable_PutEntry(void *table, const void *entry) {
         }
     }
 
-    buckets[bucket_index] = bucket = Array_AppendFrom(bucket, entry);
+    buckets[bucket_index] = bucket = Array_WithAppendedFrom(bucket, entry);
     return SHIFT(Array_At(bucket, Array_Size(bucket) - 1), header->ValueOffset);
 }
 
