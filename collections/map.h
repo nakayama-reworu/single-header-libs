@@ -2,6 +2,7 @@
 #define MAP_H
 
 #include <stdlib.h>
+#include <string.h>
 #include <stdbool.h>
 
 #define MAP__CallChecked(Callee, ArgsList)  \

@@ -2,6 +2,7 @@
 #define LIST_H
 
 #include <stdlib.h>
+#include <string.h>
 
 #define LIST__CallChecked(Callee, ArgsList) \
 ({                                          \

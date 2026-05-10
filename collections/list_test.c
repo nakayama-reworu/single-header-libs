@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "call_checked.h"
 #include "list.h"
 
 #include "testing/testing.h"

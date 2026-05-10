@@ -2,6 +2,7 @@
 #define VECTOR_H
 
 #include <stdlib.h>
+#include <string.h>
 #include <stdbool.h>
 
 #define VECTOR__CallChecked(Callee, ArgsList)   \
