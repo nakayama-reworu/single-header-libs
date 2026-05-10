@@ -13,12 +13,12 @@
 
 void *Array_New(size_t size, size_t element_size_bytes);
 
-#define Array_OfType(Type, Size)   (Type *) Array_New((Size), sizeof(Type))
-#define Array_EmptyOfType(Type)    (Type *) Array_New(/* size */ 0, sizeof(Type))
+#define Array_OfType(type, size)   (type *) Array_New((size), sizeof(type))
+#define Array_EmptyOfType(type)    (type *) Array_New(/* size */ 0, sizeof(type))
 
 void Array_Free(void *array);
 
-#define Array_FreeAndSetToNull(Array) do { Array_Free(Array); Array = NULL; } while (false)
+#define Array_FreeAndSetToNull(array) do { Array_Free(array); array = NULL; } while (false)
 
 size_t Array_ElementSize(const void *array);
 
@@ -34,37 +34,37 @@ void Array_FillFrom(void *array, const void *value);
 
 #define Array_Fill(Array, Value)    Array_FillFrom((Array), ARRAY_LITERAL_FROM_VA_ARGS(Value))
 
-#define Array_At(Array, I)  ((uint8_t *) (Array) + (I) * Array_ElementSize(Array))
+#define Array_At(array, index)  SHIFT((array), (index) * Array_ElementSize(array))
 
 void *Array_WithAppendedFrom(void *array, const void *element);
 
-#define ARRAY_LITERAL_ELEMENT_SIZE(ArrayLiteral)    sizeof((ArrayLiteral)[0])
-#define ARRAY_LITERAL_ELEMENTS_COUNT(ArrayLiteral)  (sizeof((ArrayLiteral)) / ARRAY_LITERAL_ELEMENT_SIZE(ArrayLiteral))
+#define ARRAY_LITERAL_ELEMENT_SIZE(array_literal)    sizeof((array_literal)[0])
+#define ARRAY_LITERAL_ELEMENTS_COUNT(array_literal)  (sizeof((array_literal)) / ARRAY_LITERAL_ELEMENT_SIZE(array_literal))
 
 #define Array_Append(array, value) (array = Array_WithAppendedFrom((array), ARRAY_LITERAL_FROM_VA_ARGS(value)))
 
 void *Array_ExtendWithValues(void *array, const void *data, size_t elements_count, size_t element_size);
 
-#define ARRAY_EXTEND_WITH_ARRAY_LITERAL(Array, ArrayLiteral) \
-    (Array = Array_ExtendWithValues( \
-        Array, \
-        ArrayLiteral, \
-        ARRAY_LITERAL_ELEMENTS_COUNT(ArrayLiteral), \
-        ARRAY_LITERAL_ELEMENT_SIZE(ArrayLiteral) \
+#define ARRAY_EXTEND_WITH_ARRAY_LITERAL(array, array_literal) \
+    (array = Array_ExtendWithValues( \
+        array, \
+        array_literal, \
+        ARRAY_LITERAL_ELEMENTS_COUNT(array_literal), \
+        ARRAY_LITERAL_ELEMENT_SIZE(array_literal) \
     ))
 
-#define Array_ExtendWith(Array, ...) \
-    ARRAY_EXTEND_WITH_ARRAY_LITERAL(Array, ARRAY_LITERAL_FROM_VA_ARGS(__VA_ARGS__))
+#define Array_ExtendWith(array, ...) \
+    ARRAY_EXTEND_WITH_ARRAY_LITERAL(array, ARRAY_LITERAL_FROM_VA_ARGS(__VA_ARGS__))
 
 void *Array_Extend(void *array, const void *other);
 
 void *Array_OfValues(const void *data, size_t elements_count, size_t element_size);
 
-#define ARRAY_FROM_ARRAY_LITERAL(ArrayLiteral) \
+#define ARRAY_FROM_ARRAY_LITERAL(array_literal) \
     Array_OfValues( \
-        ArrayLiteral, \
-        ARRAY_LITERAL_ELEMENTS_COUNT(ArrayLiteral), \
-        ARRAY_LITERAL_ELEMENT_SIZE(ArrayLiteral) \
+        array_literal, \
+        ARRAY_LITERAL_ELEMENTS_COUNT(array_literal), \
+        ARRAY_LITERAL_ELEMENT_SIZE(array_literal) \
     )
 
 #define Array_Of(...) \
@@ -72,12 +72,12 @@ void *Array_OfValues(const void *data, size_t elements_count, size_t element_siz
 
 bool Array_Pop(void *array, void *dst);
 
-#define Array_End(Array) (typeof(Array)) (Array_At(Array, Array_Size(Array)))
+#define Array_End(array) (typeof(array)) (Array_At(array, Array_Size(array)))
 
-#define Array_ForEachElement(Array, Action) \
+#define Array_ForEachElement(array, action) \
 do { \
-    for (size_t _i = 0; _i < Array_Size(Array); _i++) { \
-        Action(Array_At((Array), _i)); \
+    for (size_t _i = 0; _i < Array_Size(array); _i++) { \
+        action(Array_At((array), _i)); \
     } \
 } while (false)
 

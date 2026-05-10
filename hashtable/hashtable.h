@@ -39,13 +39,13 @@ void *HashTable_New(
 #define HASHTABLE_DEFAULT_BUCKETS_COUNT 128
 #define HASHTABLE_MIN_BUCKETS_COUNT     1
 
-#define HashTable(EntryType, HashFn, CompareFn) \
-(EntryType **) HashTable_New( \
-    HashFn, CompareFn, \
+#define HashTable(entry_type, hash_fn, compare_fn) \
+(entry_type **) HashTable_New( \
+    hash_fn, compare_fn, \
     HASHTABLE_DEFAULT_BUCKETS_COUNT, \
-    SIZEOF_MEMBER(EntryType, Key), offsetof(EntryType, Key), \
-    SIZEOF_MEMBER(EntryType, Value), offsetof(EntryType, Value), \
-    sizeof(EntryType) \
+    SIZEOF_MEMBER(entry_type, Key), offsetof(entry_type, Key), \
+    SIZEOF_MEMBER(entry_type, Value), offsetof(entry_type, Value), \
+    sizeof(entry_type) \
 )
 
 void *HashTable_AtKey(void *table, const void *key);
