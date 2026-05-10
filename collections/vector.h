@@ -1,14 +1,27 @@
-#pragma once
+#ifndef VECTOR_H
+#define VECTOR_H
 
 #include <stdlib.h>
 #include <stdbool.h>
 
-#ifndef CallChecked
-#error Please include call_checked.h before vector.h
-#endif
+#define VECTOR__CallChecked(Callee, ArgsList)   \
+({                                          \
+    errno = 0;                              \
+    __auto_type _r = Callee ArgsList;       \
+    if (errno) {                            \
+        fprintf(                            \
+            stderr, "[%s:%d] %s%s: %s\n",   \
+            __FILE_NAME__, __LINE__,        \
+            #Callee, #ArgsList,             \
+            strerror(errno)                 \
+        );                                  \
+        exit(EXIT_FAILURE);                 \
+    }                                       \
+    _r;                                     \
+})
 
-#define VECTOR_CONCAT_(A, B)   A ## B
-#define VECTOR_CONCAT(A, B)    VECTOR_CONCAT_(A, B)
+#define VECTOR__Concat_(A, B)   A ## B
+#define VECTOR__Concat(A, B)    VECTOR__Concat_(A, B)
 
 #define Vector_Of(TValue) \
 struct {                  \
@@ -29,7 +42,7 @@ do {                                                                        \
     if (_vec_push_back->Size >= _vec_push_back->Capacity) {                 \
         _vec_push_back->Capacity =                                          \
             3 * _vec_push_back->Capacity / 2 + 1;                           \
-        __auto_type _items = CallChecked(realloc, (                         \
+        __auto_type _items = VECTOR__CallChecked(realloc, (                 \
             _vec_push_back->Items,                                          \
             _vec_push_back->Capacity * sizeof(_vec_push_back->Items[0])     \
         ));                                                                 \
@@ -65,20 +78,20 @@ do {                                                                        \
     _value;                                     \
 })
 
-#define Vector_ForEach(ValuePtr, Vec)                                                   \
-size_t VECTOR_CONCAT(_it_, __LINE__) = 0;                                               \
-__auto_type VECTOR_CONCAT(_vec_for_, __LINE__) = (Vec);                                 \
-for (                                                                                   \
-    typeof(*(VECTOR_CONCAT(_vec_for_, __LINE__).Items)) *ValuePtr =                     \
-        VECTOR_CONCAT(_it_, __LINE__) >= VECTOR_CONCAT(_vec_for_, __LINE__).Size        \
-            ? NULL                                                                      \
-            : &VECTOR_CONCAT(_vec_for_, __LINE__).Items[VECTOR_CONCAT(_it_, __LINE__)]; \
-    VECTOR_CONCAT(_it_, __LINE__) < VECTOR_CONCAT(_vec_for_, __LINE__).Size;            \
-    VECTOR_CONCAT(_it_, __LINE__)++,                                                    \
-    ValuePtr =                                                                          \
-        VECTOR_CONCAT(_it_, __LINE__) >= VECTOR_CONCAT(_vec_for_, __LINE__).Size        \
-            ? NULL                                                                      \
-            : &VECTOR_CONCAT(_vec_for_, __LINE__).Items[VECTOR_CONCAT(_it_, __LINE__)]  \
+#define Vector_ForEach(ValuePtr, Vec)                                                       \
+size_t VECTOR__Concat(_it_, __LINE__) = 0;                                                  \
+__auto_type VECTOR__Concat(_vec_for_, __LINE__) = (Vec);                                    \
+for (                                                                                       \
+    typeof(*(VECTOR__Concat(_vec_for_, __LINE__).Items)) *ValuePtr =                        \
+        VECTOR__Concat(_it_, __LINE__) >= VECTOR__Concat(_vec_for_, __LINE__).Size          \
+            ? NULL                                                                          \
+            : &VECTOR__Concat(_vec_for_, __LINE__).Items[VECTOR__Concat(_it_, __LINE__)];   \
+    VECTOR__Concat(_it_, __LINE__) < VECTOR__Concat(_vec_for_, __LINE__).Size;              \
+    VECTOR__Concat(_it_, __LINE__)++,                                                       \
+    ValuePtr =                                                                              \
+        VECTOR__Concat(_it_, __LINE__) >= VECTOR__Concat(_vec_for_, __LINE__).Size          \
+            ? NULL                                                                          \
+            : &VECTOR__Concat(_vec_for_, __LINE__).Items[VECTOR__Concat(_it_, __LINE__)]    \
 )
 
 #define Vector_Empty(Vec)       (0 == (Vec).Size)
@@ -136,3 +149,5 @@ struct {                    \
     __auto_type _vec_slice_to = (Vec);              \
     Vector_Slice(TSlice, _vec_slice_to, 0, (End));  \
 })
+
+#endif // VECTOR_H

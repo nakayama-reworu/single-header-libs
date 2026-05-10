@@ -1,18 +1,31 @@
-#pragma once
+#ifndef LIST_H
+#define LIST_H
 
 #include <stdlib.h>
 
-#ifndef CallChecked
-#error Please include call_checked.h before list.h
-#endif
+#define LIST__CallChecked(Callee, ArgsList) \
+({                                          \
+    errno = 0;                              \
+    __auto_type _r = Callee ArgsList;       \
+    if (errno) {                            \
+        fprintf(                            \
+            stderr, "[%s:%d] %s%s: %s\n",   \
+            __FILE_NAME__, __LINE__,        \
+            #Callee, #ArgsList,             \
+            strerror(errno)                 \
+        );                                  \
+        exit(EXIT_FAILURE);                 \
+    }                                       \
+    _r;                                     \
+})
 
-#define LIST_CONCAT_(A, B)   A ## B
-#define LIST_CONCAT(A, B)    LIST_CONCAT_(A, B)
+#define LIST__Concat_(A, B)   A ## B
+#define LIST__Concat(A, B)    LIST__Concat_(A, B)
 
 #define List_Of(TValue)                         \
-struct LIST_CONCAT(List_, __LINE__) {           \
+struct LIST__Concat(List_, __LINE__) {          \
     TValue Value;                               \
-    struct LIST_CONCAT(List_, __LINE__) *Next;  \
+    struct LIST__Concat(List_, __LINE__) *Next; \
 }
 
 #define List_Free(HeadPtrPtr)           \
@@ -32,7 +45,7 @@ do {                                                        \
     __auto_type _head_ptr_ptr_push_front = (HeadPtrPtr);    \
     __auto_type _v = (Val);                                 \
     typeof(*_head_ptr_ptr_push_front) _newHead =            \
-        CallChecked(calloc, (1, sizeof(*_newHead)));        \
+        LIST__CallChecked(calloc, (1, sizeof(*_newHead)));  \
     *_newHead = (typeof(*_newHead)) {                       \
         .Value = _v,                                        \
         .Next = *_head_ptr_ptr_push_front                   \
@@ -71,17 +84,17 @@ do {                                                        \
 #define LIST_TYPEOF_MEMBER(Type, Member)    typeof(((Type) {}).Member)
 
 #define List_ForEach(ValuePtr, HeadPtr)                                         \
-__auto_type LIST_CONCAT(_it_, __LINE__) = (HeadPtr);                            \
+__auto_type LIST__Concat(_it_, __LINE__) = (HeadPtr);                            \
 for (                                                                           \
-    LIST_TYPEOF_MEMBER(typeof(*LIST_CONCAT(_it_, __LINE__)), Value) *ValuePtr = \
-        NULL != LIST_CONCAT(_it_, __LINE__)                                     \
-            ? &LIST_CONCAT(_it_, __LINE__)->Value                               \
+    LIST_TYPEOF_MEMBER(typeof(*LIST__Concat(_it_, __LINE__)), Value) *ValuePtr = \
+        NULL != LIST__Concat(_it_, __LINE__)                                     \
+            ? &LIST__Concat(_it_, __LINE__)->Value                               \
             : NULL;                                                             \
-    NULL != LIST_CONCAT(_it_, __LINE__);                                        \
-    LIST_CONCAT(_it_, __LINE__) = LIST_CONCAT(_it_, __LINE__)->Next,            \
+    NULL != LIST__Concat(_it_, __LINE__);                                        \
+    LIST__Concat(_it_, __LINE__) = LIST__Concat(_it_, __LINE__)->Next,            \
     ValuePtr =                                                                  \
-        NULL != LIST_CONCAT(_it_, __LINE__)                                     \
-            ? &LIST_CONCAT(_it_, __LINE__)->Value                               \
+        NULL != LIST__Concat(_it_, __LINE__)                                     \
+            ? &LIST__Concat(_it_, __LINE__)->Value                               \
             : NULL                                                              \
 )
 
@@ -104,3 +117,5 @@ for (                                                                           
 })
 
 #define List_Empty(HeadPtr) (NULL == (HeadPtr))
+
+#endif // LIST_H
