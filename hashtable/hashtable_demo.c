@@ -35,10 +35,10 @@ int main(void) {
     }
 
     Pair(int, int) **frequencies = HashTable(typeof(**frequencies), IntHash, memcmp);
-    for (int *n = numbers; n != Array_End(numbers); n++) {
+    Array_ForEach(n, numbers)  {
         int *count;
-        if (NULL == (count = HashTable_At(frequencies, *n))) {
-            count = HashTable_Put(frequencies, *n, 1);
+        if (NULL == (count = HashTable_At(frequencies, n))) {
+            count = HashTable_Put(frequencies, n, 1);
         } else {
             *count = *count + 1;
         }

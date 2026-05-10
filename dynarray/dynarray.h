@@ -82,4 +82,18 @@ do {                                                    \
     }                                                   \
 } while (false)
 
+#define Array_ForEach(element_name, array)  \
+typeof(*array) element_name;                \
+if (false == Array_IsEmpty(array)) {        \
+    element_name = array[0];                \
+}                                           \
+for (                                       \
+    size_t _i = 0;                          \
+    _i < Array_Size(array);                 \
+    _i++,                                   \
+    element_name = _i < Array_Size(array)   \
+        ? array[_i]                         \
+        : element_name                      \
+)
+
 #endif //PLAYGROUND_DYNARRAY_H
