@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(playground)
+project(single-header-libs)
 
 set(CMAKE_C_STANDARD 11)
 
