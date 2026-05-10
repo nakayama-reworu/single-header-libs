@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <assert.h>
 
 void *vector_new(size_t element_size, size_t elements_count);
 
@@ -42,7 +43,7 @@ void *vector_with_range_appended_from(void *, const void *src, size_t count);
 
 #define vector_append_range(vector, src, count) \
 do {                                            \
-    typeof(vector) _src = (src);                \
+    const typeof(*vector) *_src = (src);          \
     typeof(vector) _tmp =                       \
         vector_with_range_appended_from(        \
             (vector),                           \
