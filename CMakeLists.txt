@@ -13,3 +13,14 @@ target_include_directories(${VECTOR_TEST_NAME} PRIVATE ${CMAKE_SOURCE_DIR})
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(${VECTOR_TEST_NAME} PRIVATE DEBUG)
 endif()
+
+set(HASHTABLE_TEST_NAME ${PROJECT_NAME}-hashtable-test)
+add_executable(${HASHTABLE_TEST_NAME}
+        collections/hashtable/hashtable.c
+        collections/hashtable/test_hashtable.c)
+target_link_libraries(${HASHTABLE_TEST_NAME} m)
+target_compile_options(${HASHTABLE_TEST_NAME} PRIVATE -Wall -Werror -Wextra -Wpointer-arith)
+target_include_directories(${HASHTABLE_TEST_NAME} PRIVATE ${CMAKE_SOURCE_DIR})
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(${HASHTABLE_TEST_NAME} PRIVATE DEBUG)
+endif()
