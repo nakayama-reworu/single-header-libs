@@ -42,3 +42,14 @@ target_include_directories(${LINKEDLIST_TEST_NAME} PRIVATE ${CMAKE_SOURCE_DIR} $
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(${LINKEDLIST_TEST_NAME} PRIVATE DEBUG)
 endif()
+
+set(ARENA_TEST_NAME ${PROJECT_NAME}-arena-allocator)
+add_executable(${ARENA_TEST_NAME}
+        allocators/arena.c
+        allocators/arena_demo.c)
+target_link_libraries(${ARENA_TEST_NAME} m)
+target_compile_options(${ARENA_TEST_NAME} PRIVATE -Wall -Werror -Wextra -Wpointer-arith)
+target_include_directories(${ARENA_TEST_NAME} PRIVATE ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/collections)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(${ARENA_TEST_NAME} PRIVATE DEBUG)
+endif()
