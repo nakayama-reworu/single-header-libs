@@ -125,7 +125,7 @@ void Array_FillFrom(void *array, const void *value) {
 }
 
 
-void *Array_WithAppendedFrom(void *array, const void *element) {
+void *Array_WithAppended(void *array, const void *element) {
     if (NULL == array) {
         LOG_NULL(array);
         return array;
@@ -171,16 +171,24 @@ void *Array_ExtendWithValues(
     }
 
     const size_t original_size = Array_Size(array);
-    if (NULL == (array = Array_ReserveToFit(array, original_size + elements_count))) {
+    const size_t new_size = original_size + elements_count;
+    if (NULL == (array = Array_ReserveToFit(array, new_size))) {
         LOG_ERROR("Failed to increase capacity");
         return NULL;
     }
 
+    IMPL_ARRAY_HEADER(array)->Size = new_size;
     for (size_t i = 0; i < elements_count; i++) {
-        array = Array_WithAppendedFrom(array, SHIFT(data, i * element_size));
+        memcpy(
+                Array_At(array, original_size + i),
+                SHIFT(data, i * element_size),
+                Array_ElementSize(array)
+        );
     }
 
     assert(Array_Size(array) == original_size + elements_count);
+
+    LOG_DEBUG("Extended array with %d values", (int) elements_count);
 
     return array;
 }
