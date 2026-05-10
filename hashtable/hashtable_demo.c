@@ -60,8 +60,8 @@ int main(void) {
 
     HashTable_Free(frequencies, NULL);
 
-    Array_Free(pairs);
-    Array_Free(numbers);
+    Array_Free(pairs, NULL);
+    Array_Free(numbers, NULL);
 
     return EXIT_SUCCESS;
 }

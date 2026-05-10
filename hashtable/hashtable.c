@@ -220,11 +220,7 @@ void HashTable_Free(void *table, HashTableEntryDestructor free_entry) {
         if (NULL == bucket) {
             continue;
         }
-
-        if (NULL != free_entry) {
-            Array_ForEachElement(bucket, free_entry);
-        }
-        Array_FreeAndSetToNull(bucket);
+        Array_Free(bucket, free_entry);
     }
 
     free(header);

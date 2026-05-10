@@ -9,6 +9,8 @@
 #include <string.h>
 #include <assert.h>
 
+typedef void (*ArrayElementDestructor)(void *);
+
 #define ARRAY_MIN_CAPACITY 1
 
 void *Array_New(size_t size, size_t element_size_bytes);
@@ -16,9 +18,7 @@ void *Array_New(size_t size, size_t element_size_bytes);
 #define Array_OfType(type, size)   (type *) Array_New((size), sizeof(type))
 #define Array_EmptyOfType(type)    (type *) Array_New(/* size */ 0, sizeof(type))
 
-void Array_Free(void *array);
-
-#define Array_FreeAndSetToNull(array) do { Array_Free(array); array = NULL; } while (false)
+void Array_Free(void *array, ArrayElementDestructor free_element);
 
 size_t Array_ElementSize(const void *array);
 
@@ -75,11 +75,11 @@ bool Array_Pop(void *array, void *dst);
 
 #define Array_End(array) (typeof(array)) (Array_At(array, Array_Size(array)))
 
-#define Array_ForEachElement(array, action) \
-do { \
+#define Array_ForEachElement(array, action)             \
+do {                                                    \
     for (size_t _i = 0; _i < Array_Size(array); _i++) { \
-        action(Array_At((array), _i)); \
-    } \
+        action(Array_At((array), _i));                  \
+    }                                                   \
 } while (false)
 
 #endif //PLAYGROUND_DYNARRAY_H

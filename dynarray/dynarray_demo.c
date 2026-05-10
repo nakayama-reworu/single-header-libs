@@ -102,7 +102,7 @@ int RpnEval(Item *expression) {
     assert(Array_Size(operands) == 1);
     const int result = operands[0];
 
-    Array_FreeAndSetToNull(operands);
+    Array_Free(operands, NULL);
 
     return result;
 }
@@ -150,7 +150,7 @@ int main() {
     // Extend the main array with another array -> [1 2 + 2 -]
     expression = Array_Extend(expression, minus_two);
     ItemArrayPrint(expression, "\n");
-    Array_FreeAndSetToNull(minus_two);
+    Array_Free(minus_two, NULL);
 
     // Extend with array literal -> [1 2 + 2 - *]
     ARRAY_EXTEND_WITH_ARRAY_LITERAL(expression, ((Item[]) {ItemBinOp('*')}));
@@ -164,7 +164,7 @@ int main() {
     // Extend the main array with another array -> [1 2 + 2 - * 1 +]
     expression = Array_Extend(expression, plus_one);
     ItemArrayPrint(expression, "\n");
-    Array_FreeAndSetToNull(plus_one);
+    Array_Free(plus_one, NULL);
 
     ItemArrayPrint(expression, " -> ");
     printf("%d\n", RpnEval(expression));
@@ -176,7 +176,7 @@ int main() {
     ItemArrayPrint(expression, " -> ");
     printf("%d\n", RpnEval(expression));
 
-    Array_FreeAndSetToNull(expression);
+    Array_Free(expression, NULL);
 
     return EXIT_SUCCESS;
 }

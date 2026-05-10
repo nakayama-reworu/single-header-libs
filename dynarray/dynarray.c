@@ -32,10 +32,14 @@ void *Array_New(const size_t size, const size_t element_size_bytes) {
 }
 
 
-void Array_Free(void *array) {
+void Array_Free(void *array, ArrayElementDestructor free_element) {
     if (NULL == array) {
         LOG_NULL(array);
         return;
+    }
+
+    if (NULL != free_element) {
+        Array_ForEachElement(array, free_element);
     }
 
     free((void *) IMPL_ARRAY_HEADER(array));
@@ -112,7 +116,7 @@ void *Array_ReserveToFit(void *array, size_t size) {
     memcpy(new_array, array, Array_Size(array) * Array_ElementSize(array));
     IMPL_ARRAY_HEADER(new_array)->Size = Array_Size(array);
 
-    Array_Free(array);
+    Array_Free(array, NULL);
 
     return new_array;
 }
