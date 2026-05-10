@@ -104,24 +104,25 @@ struct {                    \
     TValue *Items;          \
 }
 
-#define Vector_Slice(TSlice, Vec, Start, End)                       \
-({                                                                  \
-    __auto_type _vec_slice = (Vec);                                 \
-    long long _start = (Start);                                     \
-    if (_start < 0) _start = 0;                                     \
-    if (_start >= _vec_slice.Size) _start = _vec_slice.Size - 1;    \
-    long long _end = (End);                                         \
-    if (_end < 0) _end = 0;                                         \
-    if (_end > _vec_slice.Size) _end = _vec_slice.Size;             \
-    __auto_type _items = Vector_At(_vec_slice, _start);             \
-    bool _ok = 0 <= _start                                          \
-        && _start < _vec_slice.Size                                 \
-        && _end >= _start                                           \
-        && _end <= _vec_slice.Size;                                 \
-    (TSlice) {                                                      \
-        .Size=(_ok ? (_end-_start) : 0),                            \
-        .Items=(_ok ? _items : NULL),                               \
-    };                                                              \
+#define Vector_Slice(TSlice, Vec, Start, End)           \
+({                                                      \
+    __auto_type _vec_slice = (Vec);                     \
+    long long _sz_slice = _vec_slice.Size;              \
+    long long _start = (Start);                         \
+    if (_start < 0) _start = 0;                         \
+    if (_start >= _sz_slice) _start = _sz_slice - 1;    \
+    long long _end = (End);                             \
+    if (_end < 0) _end = 0;                             \
+    if (_end > _sz_slice) _end = _sz_slice;             \
+    __auto_type _items = Vector_At(_vec_slice, _start); \
+    bool _ok = 0 <= _start                              \
+        && _start < _sz_slice                           \
+        && _end >= _start                               \
+        && _end <= _sz_slice;                           \
+    (TSlice) {                                          \
+        .Size=(_ok ? (_end-_start) : 0),                \
+        .Items=(_ok ? _items : NULL),                   \
+    };                                                  \
 })
 
 #define Vector_SliceFrom(TSlice, Vec, Start)                                \
