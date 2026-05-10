@@ -4,6 +4,9 @@
 
 Generic collections with operations implemented as macros.
 
+Include [call_checked.h](collections/call_checked.h)
+before including the collection header.
+
 * [Vector](#vector)
 * [Linked List](#linked-list)
 * [Map](#map)
