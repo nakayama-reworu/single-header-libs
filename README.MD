@@ -4,7 +4,7 @@
 
 Generic collections with operations implemented as macros.
 
-Include [call_checked.h](collections/call_checked.h)
+Include [call_checked.h](call_checked.h)
 before including the collection header.
 
 * [Vector](#vector)
