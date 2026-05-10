@@ -1,14 +1,27 @@
-#pragma once
+#ifndef MAP_H
+#define MAP_H
 
 #include <stdlib.h>
 #include <stdbool.h>
 
-#ifndef CallChecked
-#error Please include call_checked.h before map.h
-#endif
+#define MAP__CallChecked(Callee, ArgsList)  \
+({                                          \
+    errno = 0;                              \
+    __auto_type _r = Callee ArgsList;       \
+    if (errno) {                            \
+        fprintf(                            \
+            stderr, "[%s:%d] %s%s: %s\n",   \
+            __FILE_NAME__, __LINE__,        \
+            #Callee, #ArgsList,             \
+            strerror(errno)                 \
+        );                                  \
+        exit(EXIT_FAILURE);                 \
+    }                                       \
+    _r;                                     \
+})
 
-#define MAP_CONCAT_(A, B)   A ## B
-#define MAP_CONCAT(A, B)    MAP_CONCAT_(A, B)
+#define MAP__Concat_(A, B)   A ## B
+#define MAP__Concat(A, B)    MAP__Concat_(A, B)
 
 #define Map_Of(TKey, TValue)        \
 struct {                            \
@@ -55,7 +68,7 @@ do {                                                                    \
     if (_oldCapacity >= _newCapacity) { break; }                        \
                                                                         \
     __auto_type _oldEntries = _map_ptr_reserve->Entries;                \
-    _map_ptr_reserve->Entries = CallChecked(                            \
+    _map_ptr_reserve->Entries = MAP__CallChecked(                       \
         calloc, (_newCapacity, sizeof(*(_map_ptr_reserve->Entries)))    \
     );                                                                  \
     _map_ptr_reserve->Capacity = _newCapacity;                          \
@@ -132,26 +145,28 @@ do {                                                                    \
 })
 
 #define Map_ForEach(EntryPtr, Map)                                                                  \
-size_t MAP_CONCAT(_i_, __LINE__) = 0;                                                               \
-__auto_type MAP_CONCAT(_map_for_each_, __LINE__) = (Map);                                           \
+size_t MAP__Concat(_i_, __LINE__) = 0;                                                              \
+__auto_type MAP__Concat(_map_for_each_, __LINE__) = (Map);                                          \
 for (                                                                                               \
-    typeof(*(MAP_CONCAT(_map_for_each_, __LINE__).Entries)) *EntryPtr =                             \
+    typeof(*(MAP__Concat(_map_for_each_, __LINE__).Entries)) *EntryPtr =                            \
         Map_TryFindNextUsedIndex(                                                                   \
-            MAP_CONCAT(_map_for_each_, __LINE__),                                                   \
-            MAP_CONCAT(_i_, __LINE__),                                                              \
-            &MAP_CONCAT(_i_, __LINE__)                                                              \
+            MAP__Concat(_map_for_each_, __LINE__),                                                  \
+            MAP__Concat(_i_, __LINE__),                                                             \
+            &MAP__Concat(_i_, __LINE__)                                                             \
         )                                                                                           \
-            ? &(MAP_CONCAT(_map_for_each_, __LINE__).Entries[MAP_CONCAT(_i_, __LINE__)])            \
+            ? &(MAP__Concat(_map_for_each_, __LINE__).Entries[MAP__Concat(_i_, __LINE__)])          \
             : NULL;                                                                                 \
     NULL != EntryPtr;                                                                               \
     EntryPtr =                                                                                      \
         Map_TryFindNextUsedIndex(                                                                   \
-            MAP_CONCAT(_map_for_each_, __LINE__),                                                   \
-            MAP_CONCAT(_i_, __LINE__) + 1,                                                          \
-            &MAP_CONCAT(_i_, __LINE__)                                                              \
+            MAP__Concat(_map_for_each_, __LINE__),                                                  \
+            MAP__Concat(_i_, __LINE__) + 1,                                                         \
+            &MAP__Concat(_i_, __LINE__)                                                             \
         )                                                                                           \
-            ? &(MAP_CONCAT(_map_for_each_, __LINE__).Entries[MAP_CONCAT(_i_, __LINE__)])            \
+            ? &(MAP__Concat(_map_for_each_, __LINE__).Entries[MAP__Concat(_i_, __LINE__)])          \
             : NULL                                                                                  \
 )
 
 #define Map_Empty(Map) (0 == (Map).Size)
+
+#endif // MAP_H
