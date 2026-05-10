@@ -8,17 +8,24 @@
  */
 
 #ifndef CallChecked
-#error 'CallChecked' is required by this implementation
+#error Please include call_checked.h before vector.h
 #endif
 
-#ifndef CONCAT
-#define CONCAT_(A, B)   A ## B
-#define CONCAT(A, B)    CONCAT_(A, B)
-#endif
+#define VECTOR_CONCAT_(A, B)   A ## B
+#define VECTOR_CONCAT(A, B)    VECTOR_CONCAT_(A, B)
 
-#define Vector_Of(TValue) struct { size_t Size; size_t Capacity; TValue *Items; }
+#define Vector_Of(TValue) \
+struct {                  \
+    size_t Size;          \
+    size_t Capacity;      \
+    TValue *Items;        \
+}
 
-#define Vector_Free(VecPtr) do { free((void *) (VecPtr)->Items); *(VecPtr) = (typeof(*(VecPtr))) { 0 }; } while (0)
+#define Vector_Free(VecPtr)                 \
+do {                                        \
+    free((void *) (VecPtr)->Items);         \
+    *(VecPtr) = (typeof(*(VecPtr))) { 0 };  \
+} while (0)
 
 #define Vector_PushBack(VecPtr, Val)                            \
 do {                                                            \
@@ -45,19 +52,19 @@ do {                                                            \
     _ok;                                            \
 })
 
-#define Vector_ForEach(ValuePtr, Vec)                   \
-size_t CONCAT(_it_, __LINE__) = 0;                      \
-for (                                                   \
-    typeof(*((Vec).Items)) *ValuePtr =                  \
-        CONCAT(_it_, __LINE__) >= (Vec).Size            \
-            ? NULL                                      \
-            : &(Vec).Items[CONCAT(_it_, __LINE__)];     \
-    CONCAT(_it_, __LINE__) < (Vec).Size;                \
-    CONCAT(_it_, __LINE__)++,                           \
-    ValuePtr =                                          \
-        CONCAT(_it_, __LINE__) >= (Vec).Size            \
-            ? NULL                                      \
-            : &(Vec).Items[CONCAT(_it_, __LINE__)]      \
+#define Vector_ForEach(ValuePtr, Vec)                       \
+size_t VECTOR_CONCAT(_it_, __LINE__) = 0;                   \
+for (                                                       \
+    typeof(*((Vec).Items)) *ValuePtr =                      \
+        VECTOR_CONCAT(_it_, __LINE__) >= (Vec).Size         \
+            ? NULL                                          \
+            : &(Vec).Items[VECTOR_CONCAT(_it_, __LINE__)];  \
+    VECTOR_CONCAT(_it_, __LINE__) < (Vec).Size;             \
+    VECTOR_CONCAT(_it_, __LINE__)++,                        \
+    ValuePtr =                                              \
+        VECTOR_CONCAT(_it_, __LINE__) >= (Vec).Size         \
+            ? NULL                                          \
+            : &(Vec).Items[VECTOR_CONCAT(_it_, __LINE__)]   \
 )
 
 int main(void) {
