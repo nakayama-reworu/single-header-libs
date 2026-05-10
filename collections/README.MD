@@ -1,13 +1,15 @@
 # Collections
 
-* [span.h - View over contiguous region of memory](#span)
-* [vector.h - Dynamic array](#vector)
-* [map.h - Collection of key-value pairs](#map)
-* [list.h - Singly linked list](#list)
+* [Span](#span)
+* [Vector](#vector)
+* [Map](#map)
+* [List](#list)
 
 ## Span
 
 [span.h](span.h), [span_test.c](span_test.c)
+
+A view over contiguous region of memory.
 
 ### Type constructors
 
@@ -149,6 +151,105 @@ Span_ForEach(it, nums) {
 
 ## Vector
 
+[vector.h](vector.h), [vector_test.c](vector_test.c)
+
+A dynamic array.
+
+### Type constructors
+
+* [Vector](#vector-1)
+
+#### Vector
+```c
+#define Vector(TValue)  \
+struct {                \
+    size_t Size;        \
+    size_t Capacity;    \
+    TValue *Items;      \
+}
+```
+
+### Functions
+
+* [Vector_Empty](#vectorempty)
+* [Vector_FromPtr](#vectorfromptr)
+* [Vector_FromArray](#vectorfromarray)
+* [Vector_From](#vectorfrom)
+* [Vector_Of](#vectorof)
+* [Vector_PushBack](#vectorpushback)
+* [Vector_TryPopBack](#vectortrypopback)
+* [Vector_IsEmpty](#vectorisempty)
+* [Vector_Clear](#vectorclear)
+
+#### Vector_Empty
+```c
+#define Vector_Empty(VectorType)
+```
+Construct an empty vector of type `VectorType`.
+
+#### Vector_FromPtr
+```c
+#define Vector_FromPtr(VectorType, Ptr, Count)
+```
+Construct a vector of type `VectorType` and copy `Count` elements
+from `Ptr`.
+
+#### Vector_FromArray
+```c
+#define Vector_FromArray(VectorType, Array)
+```
+Construct a vector of type `VectorType` and elements of `Array`. `Array` must
+be an automatic array or an array literal. 
+
+#### Vector_From
+```c
+#define Vector_From(VectorType, Src)
+```
+Construct a vector of type `VectorType` and copy `Src.Size` elements 
+from `Src,Items`. Can be used to make a copy of a vector.
+
+#### Vector_Of
+```c
+Vector_Of(VectorType, ...)
+```
+Construct a vector of type `VectorType` with given elements.
+
+#### Vector_Free
+```c
+#define Vector_Free(VecPtr)
+```
+Free a vector.
+
+#### Vector_PushBack
+```c
+#define Vector_PushBack(VecPtr, Val)
+```
+Append a value.
+
+#### Vector_TryPopBack
+```c
+#define Vector_TryPopBack(VecPtr, ValuePtr)
+```
+If vector at `VecPtr` contains elements, copy last element to 
+`ValuePtr`, decrement `Size` and return `true`. If vector at `VecPtr`
+is empty, return `false`.
+
+#### Vector_IsEmpty
+```c
+#define Vector_IsEmpty(Vec)
+```
+Returns `true` iff `Vec` contains no elements.
+
+#### Vector_Clear
+```c
+#define Vector_Clear(VecPtr)
+```
+Set `VecPtr->Size` to `0`. Does not free any memory.
+
 ## Map
 
+A collections of key-value pairs.
+
 ## List
+
+A singly linked list.
