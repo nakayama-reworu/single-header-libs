@@ -1,5 +1,5 @@
-#ifndef PLAYGROUND_DYNARRAY_H
-#define PLAYGROUND_DYNARRAY_H
+#ifndef PLAYGROUND_VECTOR_H
+#define PLAYGROUND_VECTOR_H
 
 #include "common/macros.h"
 
@@ -89,4 +89,4 @@ for (                                           \
         )                                       \
 )
 
-#endif //PLAYGROUND_DYNARRAY_H
+#endif //PLAYGROUND_VECTOR_H
