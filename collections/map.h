@@ -73,34 +73,34 @@ do {                                                            \
     if (3 * ((MapPtr)->Size + 1) >= 2 * (MapPtr)->Capacity) {       \
         Map_Reserve((MapPtr), 3 * (MapPtr)->Capacity / 2 + 3);      \
     }                                                               \
-    __auto_type _slot = Map_FindSlot(*(MapPtr), (Key_));            \
-    _slot->Value = (Value_);                                        \
-    if (false == _slot->Used) {                                     \
-        _slot->Key = (Key_);                                        \
-        _slot->Used = true;                                         \
+    __auto_type _slot_put = Map_FindSlot(*(MapPtr), (Key_));        \
+    _slot_put->Value = (Value_);                                    \
+    if (false == _slot_put->Used) {                                 \
+        _slot_put->Key = (Key_);                                    \
+        _slot_put->Used = true;                                     \
         (MapPtr)->Size += 1;                                        \
     }                                                               \
-    &(_slot->Value);                                                \
+    &(_slot_put->Value);                                            \
 })
 
-#define Map_TryGet(Map, Key_, ValuePtr)                 \
-({                                                      \
-    __auto_type _slot = Map_FindSlot((Map), (Key_));    \
-    bool _ok = false;                                   \
-    if (NULL != _slot && _slot->Used) {                 \
-        *ValuePtr = _slot->Value;                       \
-        _ok = true;                                     \
-    }                                                   \
-    _ok;                                                \
+#define Map_TryGet(Map, Key_, ValuePtr)                     \
+({                                                          \
+    __auto_type _slot_get = Map_FindSlot((Map), (Key_));    \
+    bool _ok = false;                                       \
+    if (NULL != _slot_get && _slot_get->Used) {             \
+        *ValuePtr = _slot_get->Value;                       \
+        _ok = true;                                         \
+    }                                                       \
+    _ok;                                                    \
 })
 
-#define Map_GetOrDefault(Map, Key_, DefaultExpr)        \
-({                                                      \
-    typeof((Map).Entries->Value) _value;                \
-    if (false == Map_TryGet((Map), (Key_), &_value)) {  \
-        _value = (DefaultExpr);                         \
-    }                                                   \
-    _value;                                             \
+#define Map_GetOrDefault(Map, Key_, DefaultExpr)                    \
+({                                                                  \
+    typeof((Map).Entries->Value) _value_or_default;                 \
+    if (false == Map_TryGet((Map), (Key_), &_value_or_default)) {   \
+        _value_or_default = (DefaultExpr);                          \
+    }                                                               \
+    _value_or_default;                                              \
 })
 
 #define Map_TryFindNextUsedIndex(Map, BaseIndex, NextIndexPtr)  \
