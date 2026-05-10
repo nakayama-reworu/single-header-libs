@@ -11,6 +11,10 @@ before including the collection header.
 * [Linked List](#linked-list)
 * [Map](#map)
 
+### Strings
+
+See [readme for strings](strings/README.MD).
+
 ### Other
 
 * [Header-only testing micro-framework](#testing)
