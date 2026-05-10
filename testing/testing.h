@@ -19,21 +19,21 @@
 #define TEST_FILE __FILE__
 #endif
 
-typedef void (*Test)(size_t, const char *, bool *);
+typedef void (*TestImplementation)(size_t, const char *, bool *);
 
 typedef struct {
-    const Test test_body;
-    const char *const test_name;
+    const TestImplementation Implementation;
+    const char *const Name;
 } TestCase;
 
-#define test_nameof(it) ({(void) it; #it;})
+#define Testing_Nameof(it) ({(void) it; #it;})
 
-#define test_fact(name) static void name(const size_t __test_no, const char* const __test_name, bool* const __ok)
+#define Testing_Fact(name) static void name(const size_t __test_no, const char* const __test_name, bool* const __ok)
 
-#define test_assert(assertion, format, ...)                                         \
+#define Testing_Assert(assertion, format, ...)                                      \
 do {                                                                                \
-    const bool success = (assertion);                                               \
-    if (false == success) {                                                         \
+    const bool _success = (assertion);                                              \
+    if (false == _success) {                                                        \
         *__ok = false;                                                              \
         fprintf(                                                                    \
             TEST_FAILURE_STREAM,                                                    \
@@ -47,17 +47,17 @@ do {                                                                            
     }                                                                               \
 } while (0)
 
-#define test_case(name) (TestCase) { .test_name = #name, .test_body = name }
+#define Testing_Test(name) (TestCase) { .Name = #name, .Implementation = name }
 
-#define test_all_tests static const TestCase tests[]
+#define Testing_AllTests static const TestCase tests[]
 
-#define test_run_all_tests()                                    \
+#define Testing_RunAllTests()                                   \
 int main(void) {                                                \
-    const size_t tests_count = sizeof(tests) / sizeof(*tests);  \
+    const size_t testsCount = sizeof(tests) / sizeof(*tests);   \
     size_t failed = 0;                                          \
-    for (size_t i = 0; i < tests_count; i++) {                  \
+    for (size_t i = 0; i < testsCount; i++) {                   \
         bool ok = true;                                         \
-        tests[i].test_body(i + 1, tests[i].test_name, &ok);     \
+        tests[i].Implementation(i + 1, tests[i].Name, &ok);     \
         if (false == ok) {                                      \
             failed++;                                           \
             continue;                                           \
@@ -66,17 +66,18 @@ int main(void) {                                                \
         fprintf(                                                \
             TEST_SUCCESS_STREAM,                                \
             "[TEST %02zu] PASSED %s\n",                         \
-            i + 1, tests[i].test_name                           \
+            i + 1, tests[i].Name                                \
         );                                                      \
     }                                                           \
                                                                 \
     fprintf(                                                    \
         TEST_SUCCESS_STREAM,                                    \
         "\n%zu tests, %zu passed, %zu failed\n",                \
-        tests_count, tests_count - failed, failed               \
+        testsCount, testsCount - failed, failed                 \
     );                                                          \
     fflush(TEST_SUCCESS_STREAM);                                \
     return failed > 0 ? EXIT_FAILURE : EXIT_SUCCESS;            \
-}
+}                                                               \
+struct Testing_DummyStruct_ {}
 
 #endif //PLAYGROUND_TESTING_H
