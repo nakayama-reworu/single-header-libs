@@ -14,7 +14,7 @@ do {                                                    \
     fprintf(                                            \
         stderr,                                         \
         "[" #Level "] [%s:%d] %s - " Message "\n",      \
-        __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__ \
+        __FILE_NAME__, __LINE__, __FUNCTION__, ##__VA_ARGS__ \
     );                                                  \
     fflush(stderr);                                     \
 } while (0)
