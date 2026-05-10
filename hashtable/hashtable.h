@@ -50,10 +50,10 @@ void *hashtable_new(
 
 void hashtable_free(void *, HashTableEntryDestructor);
 
-void *hashtable_value_at(const void *, const void *key);
+void *hashtable_get_value_by_key(const void *, const void *key);
 
 #define hashtable_at(table, key)                                        \
-(typeof_member(typeof(*(table)), Value) *) hashtable_value_at(          \
+(typeof_member(typeof(*(table)), Value) *) hashtable_get_value_by_key(  \
     (table),                                                            \
     array_literal_of_type(typeof_member(typeof(*(table)), Key), (key))  \
 )
@@ -88,24 +88,28 @@ bool hashtable_end(const void *, HashTableIterator);
 
 void hashtable_next(const void *, HashTableIterator *);
 
-const void *hashtable_get_entry(const void *, HashTableIterator);
+const void *hashtable_get_entry_at_iterator(const void *, HashTableIterator);
 
-void hashtable_copy_entry(const void *, HashTableIterator, void *dst);
+void hashtable_copy_entry_at_iterator(const void *, HashTableIterator, void *dst);
 
-#define hashtable_foreach(entry_name, table)                                            \
-HashTableIterator CONCAT(_i_, __LINE__) = hashtable_begin(table);                                  \
-for (                                                                                   \
-    __auto_type entry_name =                                         \
-        (hashtable_end((table), CONCAT(_i_, __LINE__))                                \
-            ? (typeof(*table)) {}                                                                  \
-            : *(typeof(*table) *) hashtable_get_entry(                              \
-                (table),                                                                \
-                CONCAT(_i_, __LINE__)                                                          \
-            )  \
-        );                                                                      \
-    !hashtable_end((table), CONCAT(_i_, __LINE__));                                     \
-    hashtable_next((table), &CONCAT(_i_, __LINE__)),             \
-        hashtable_copy_entry((table), CONCAT(_i_, __LINE__), &entry_name)                  \
+#define hashtable_foreach(entry_name, table)                                \
+HashTableIterator CONCAT(_i_, __LINE__) = hashtable_begin(table);           \
+for (                                                                       \
+    __auto_type entry_name =                                                \
+        (hashtable_end((table), CONCAT(_i_, __LINE__))                      \
+            ? (typeof(*table)) {}                                           \
+            : *(typeof(*table) *) hashtable_get_entry_at_iterator(          \
+                (table),                                                    \
+                CONCAT(_i_, __LINE__)                                       \
+            )                                                               \
+        );                                                                  \
+    !hashtable_end((table), CONCAT(_i_, __LINE__));                         \
+    hashtable_next((table), &CONCAT(_i_, __LINE__)),                        \
+        hashtable_copy_entry_at_iterator(                                   \
+            (table),                                                        \
+            CONCAT(_i_, __LINE__),                                          \
+            &entry_name                                                     \
+        )                                                                   \
 )
 
 

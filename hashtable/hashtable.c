@@ -46,11 +46,11 @@ static bool is_over_load_threshold(const HashTable *table) {
     return load_factor(table) >= LOAD_FACTOR_THRESHOLD;
 }
 
-static size_t hashtable_entry_index(const HashTable *table, const void *p_key) {
-    return (size_t) table->Hash(p_key) % table->TotalSlots;
+static size_t hashtable_entry_index(const HashTable *table, const void *key) {
+    return (size_t) table->Hash(key) % table->TotalSlots;
 }
 
-static void *hashtable_entry_at_index(const HashTable *table, size_t index) {
+static void *hashtable_get_entry_by_index(const HashTable *table, size_t index) {
     index = index % table->TotalSlots;
     return advance_bytes(table->Slots, index * table->ExtendedEntrySize);
 }
@@ -58,45 +58,46 @@ static void *hashtable_entry_at_index(const HashTable *table, size_t index) {
 static void hashtable_set_entry(
         HashTable *table,
         void *entry,
-        const void *p_key,
-        const void *p_value
+        const void *key,
+        const void *value
 ) {
-    memcpy(entry_get_value(table, entry), p_value, table->ValueSize);
+    memcpy(entry_get_value(table, entry), value, table->ValueSize);
     if (*entry_get_occupied(table, entry)) {
         LOG_DEBUG("Key existed");
         return;
     }
 
-    memcpy(entry_get_key(table, entry), p_key, table->KeySize);
+    memcpy(entry_get_key(table, entry), key, table->KeySize);
     *entry_get_occupied(table, entry) = true;
     table->UsedSlots += 1;
     LOG_DEBUG("Inserted new key");
 }
 
-static void hashtable_put_ignore_load(HashTable *table, const void *p_key, const void *p_value) {
+static void hashtable_put_ignore_load(HashTable *table, const void *key, const void *value) {
     assert(NULL != table);
-    assert(NULL != p_key);
-    assert(NULL != p_value);
+    assert(NULL != key);
+    assert(NULL != value);
 
     assert(!is_over_load_threshold(table));
 
-    const size_t base_index = hashtable_entry_index(table, p_key);
+    const size_t base_index = hashtable_entry_index(table, key);
 
-    void *entry = hashtable_entry_at_index(table, base_index);
-    size_t offset = 0;
-    for (; offset < table->TotalSlots; offset++, entry = hashtable_entry_at_index(table, base_index + offset)) {
+    void *entry = hashtable_get_entry_by_index(table, base_index);
+    for (size_t offset = 0; offset < table->TotalSlots; offset++) {
+        entry = hashtable_get_entry_by_index(table, base_index + offset);
+
         if (entry_is_free(table, entry)) {
             LOG_DEBUG("Found empty slot");
             break;
         }
 
-        if (0 == table->Compare(entry_get_key(table, entry), p_key)) {
+        if (0 == table->Compare(entry_get_key(table, entry), key)) {
             LOG_DEBUG("Found existing slot with the same key");
             break;
         }
     }
 
-    hashtable_set_entry(table, entry, p_key, p_value);
+    hashtable_set_entry(table, entry, key, value);
 
     LOG_DEBUG(
             "Placed entry with hash %d to %d, slots_used=%d, load_factor=%.2lf",
@@ -122,7 +123,7 @@ static void *hashtable_replace_with_larger(HashTable *old_table) {
     LOG_DEBUG("Increased capacity from %d to %d", (int) old_table->TotalSlots, (int) table->TotalSlots);
 
     for (size_t i = 0; i < old_table->TotalSlots; i++) {
-        void *old_entry = hashtable_entry_at_index(old_table, i);
+        void *old_entry = hashtable_get_entry_by_index(old_table, i);
         if (entry_is_free(old_table, old_entry)) {
             continue;
         }
@@ -139,20 +140,20 @@ static void *hashtable_replace_with_larger(HashTable *old_table) {
     return table;
 }
 
-static void *hashtable_entry_at_key(const HashTable *table, const void *p_key) {
+static void *hashtable_get_entry_by_key(const HashTable *table, const void *key) {
     assert(NULL != table);
-    assert(NULL != p_key);
+    assert(NULL != key);
 
-    const size_t base_index = hashtable_entry_index(table, p_key);
+    const size_t base_index = hashtable_entry_index(table, key);
 
     for (size_t offset = 0; offset < table->TotalSlots; offset++) {
-        void *entry = hashtable_entry_at_index(table, base_index + offset);
+        void *entry = hashtable_get_entry_by_index(table, base_index + offset);
         if (entry_is_free(table, entry)) {
             LOG_DEBUG("Found empty slot, key{hash=%d} does not exist", (int) base_index);
             return NULL;
         }
 
-        if (0 == table->Compare(entry_get_key(table, entry), p_key)) {
+        if (0 == table->Compare(entry_get_key(table, entry), key)) {
             LOG_DEBUG("Located entry with key{hash=%d} at %d", (int) base_index, (int) (base_index + offset));
             return entry;
         }
@@ -200,7 +201,7 @@ void hashtable_free(void *t, HashTableEntryDestructor free_entry) {
 
     if (NULL != free_entry) {
         for (size_t i = 0; i < table->TotalSlots; i++) {
-            void *entry = hashtable_entry_at_index(table, i);
+            void *entry = hashtable_get_entry_by_index(table, i);
             if (entry_is_free(table, entry)) {
                 continue;
             }
@@ -212,7 +213,7 @@ void hashtable_free(void *t, HashTableEntryDestructor free_entry) {
     free(table);
 }
 
-void *hashtable_value_at(const void *t, const void *key) {
+void *hashtable_get_value_by_key(const void *t, const void *key) {
     if (NULL == t) {
         LOG_NULL(t);
         return NULL;
@@ -223,7 +224,7 @@ void *hashtable_value_at(const void *t, const void *key) {
     }
 
     const HashTable *table = t;
-    void *entry = hashtable_entry_at_key(table, key);
+    void *entry = hashtable_get_entry_by_key(table, key);
     if (NULL == entry) {
         return NULL;
     }
@@ -258,7 +259,7 @@ void *hashtable_put_entry(void *t, const void *entry) {
 
 static size_t hashtable_next_used_slot_index(const HashTable *table, size_t base_index) {
     for (size_t index = base_index; index < table->TotalSlots; index++) {
-        void *entry = hashtable_entry_at_index(table, index);
+        void *entry = hashtable_get_entry_by_index(table, index);
         if (entry_is_occupied(table, entry)) {
             return index;
         }
@@ -289,14 +290,14 @@ void hashtable_next(const void *t, HashTableIterator *it) {
     it->_i = hashtable_next_used_slot_index(table, it->_i + 1);
 }
 
-const void *hashtable_get_entry(const void *t, HashTableIterator it) {
+const void *hashtable_get_entry_at_iterator(const void *t, HashTableIterator it) {
     const HashTable *table = t;
-    return hashtable_end(table, it) ? NULL : hashtable_entry_at_index(table, it._i);
+    return hashtable_end(table, it) ? NULL : hashtable_get_entry_by_index(table, it._i);
 }
 
-void hashtable_copy_entry(const void *t, HashTableIterator it, void *dst) {
+void hashtable_copy_entry_at_iterator(const void *t, HashTableIterator it, void *dst) {
     const HashTable *table = t;
-    const void *entry = hashtable_get_entry(table, it);
+    const void *entry = hashtable_get_entry_at_iterator(table, it);
     if (NULL == entry) {
         return;
     }
