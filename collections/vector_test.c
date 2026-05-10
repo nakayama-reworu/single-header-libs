@@ -74,6 +74,31 @@ Testing_Fact(Of_returns_vector_with_given_elements) {
     Vector_Free(&sut);
 }
 
+Testing_Fact(Reserve_does_nothing_if_new_capacity_is_less_or_equal_to_current) {
+    IntVector sut = Vector_Of(IntVector, 1, 2, 3, 4, 5);
+    int const * const items = sut.Items;
+    size_t capacity = sut.Capacity;
+
+    Vector_Reserve(&sut, sut.Capacity - 1);
+
+    Testing_Assert(items == sut.Items, "expected data to not be moved");
+    Testing_Assert(capacity == sut.Capacity, "expected capacity to not change");
+
+    Vector_Reserve(&sut, sut.Capacity);
+
+    Testing_Assert(items == sut.Items, "expected data to not be moved");
+    Testing_Assert(capacity == sut.Capacity, "expected capacity to not change");
+}
+
+Testing_Fact(Reserve_increases_capacity_if_new_capacity_is_greater_than_current) {
+    IntVector sut = Vector_Of(IntVector, 1, 2, 3, 4, 5);
+    size_t const newCapacity = sut.Capacity + 1;
+
+    Vector_Reserve(&sut, newCapacity);
+
+    Testing_Assert(newCapacity == sut.Capacity, "expected capacity to increase");
+}
+
 Testing_Fact(PushBack_appends_elements) {
     IntVector sut = Vector_Empty(IntVector);
 
@@ -191,6 +216,8 @@ Testing_AllTests = {
         Testing_AddTest(FromArray_returns_vector_with_elements_from_given_array_literal),
         Testing_AddTest(From_returns_vector_with_elements_from_given_struct),
         Testing_AddTest(Of_returns_vector_with_given_elements),
+        Testing_AddTest(Reserve_does_nothing_if_new_capacity_is_less_or_equal_to_current),
+        Testing_AddTest(Reserve_increases_capacity_if_new_capacity_is_greater_than_current),
         Testing_AddTest(PushBack_appends_elements),
         Testing_AddTest(Free_sets_size_and_capacity_to_0),
         Testing_AddTest(TryPopBack_returns_false_for_empty_vector),

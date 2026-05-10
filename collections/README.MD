@@ -220,6 +220,14 @@ Construct a vector of type `VectorType` with given elements.
 ```
 Free a vector.
 
+#### Vector_Reserve
+```c
+#define Vector_Reserve(VecPtr, NewCapacity)
+```
+Preallocate enough space to store `NewCapacity` elements.
+Does nothing if `NewCapacity` is less of equal to
+`VecPtr->Capacity`.
+
 #### Vector_PushBack
 ```c
 #define Vector_PushBack(VecPtr, Val)

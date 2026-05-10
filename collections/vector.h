@@ -60,19 +60,33 @@ do {                                        \
     *(VecPtr) = (typeof(*(VecPtr))) { 0 };  \
 } while (0)
 
+#define Vector_Reserve(VecPtr, NewCapacity)                             \
+do {                                                                    \
+    size_t _newCapacity = (NewCapacity);                                \
+    __auto_type _vecPtr_reserve = (VecPtr);                             \
+    if (_newCapacity <= _vecPtr_reserve->Capacity) {                    \
+        break;                                                          \
+    }                                                                   \
+    _vecPtr_reserve->Capacity = _newCapacity;                           \
+    __auto_type _items = VECTOR__CallChecked(realloc, (                 \
+        _vecPtr_reserve->Items,                                         \
+        _vecPtr_reserve->Capacity * sizeof(_vecPtr_reserve->Items[0])   \
+    ));                                                                 \
+    _vecPtr_reserve->Items = _items;                                    \
+} while (0)
+
 #define Vector_PushBack(VecPtr, Val)                                        \
 do {                                                                        \
-    __auto_type _vec_push_back = (VecPtr);                                  \
-    if (_vec_push_back->Size >= _vec_push_back->Capacity) {                 \
-        _vec_push_back->Capacity =                                          \
-            3 * _vec_push_back->Capacity / 2 + 1;                           \
-        __auto_type _items = VECTOR__CallChecked(realloc, (                 \
-            _vec_push_back->Items,                                          \
-            _vec_push_back->Capacity * sizeof(_vec_push_back->Items[0])     \
-        ));                                                                 \
-        _vec_push_back->Items = _items;                                     \
+    __auto_type _vecPtr_pushBack = (VecPtr);                                \
+    if (_vecPtr_pushBack->Size >= _vecPtr_pushBack->Capacity) {             \
+        _vecPtr_pushBack->Capacity =                                        \
+            3 * _vecPtr_pushBack->Capacity / 2 + 1;                         \
+        Vector_Reserve(                                                     \
+            _vecPtr_pushBack,                                               \
+            3 * _vecPtr_pushBack->Capacity / 2 + 1                          \
+        );                                                                  \
     }                                                                       \
-    _vec_push_back->Items[_vec_push_back->Size++] = (Val);                  \
+    _vecPtr_pushBack->Items[_vecPtr_pushBack->Size++] = (Val);              \
 } while (0)
 
 #define Vector_TryPopBack(VecPtr, ValuePtr)                         \
