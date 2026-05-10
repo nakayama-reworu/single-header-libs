@@ -71,7 +71,14 @@ void *Array_OfValues(const void *data, size_t elements_count, size_t element_siz
 #define Array_Of(...) \
     ARRAY_FROM_ARRAY_LITERAL(ARRAY_LITERAL_FROM_VA_ARGS(__VA_ARGS__))
 
-bool Array_Pop(void *array, void *dst);
+bool Array_PopTo(void *array, void *dst);
+
+#define Array_Pop(array)     \
+({                              \
+    typeof(*array) _item;       \
+    Array_PopTo(array, &_item); \
+    _item;                      \
+})
 
 #define Array_End(array) (typeof(array)) (Array_At(array, Array_Size(array)))
 

@@ -214,7 +214,7 @@ void *Array_OfValues(
 }
 
 
-bool Array_Pop(void *array, void *dst) {
+bool Array_PopTo(void *array, void *dst) {
     if (NULL == array) {
         LOG_NULL(array);
         return false;

@@ -2,8 +2,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
 #include <assert.h>
 
 
@@ -78,19 +76,15 @@ int RpnEval(Item *expression) {
                 Array_Append(operands, cur->Value);
                 break;
             case BIN_OP: {
-//                assert(ArraySize(operands) == 2);
-                int op1, op2;
-                Array_Pop(operands, &op2);
-                Array_Pop(operands, &op1);
+                int op2 = Array_Pop(operands);
+                int op1 = Array_Pop(operands);
 
                 Array_Append(operands, EvalBinOp(cur->Op, op1, op2));
 
                 break;
             }
             case UN_OP: {
-//                assert(ArraySize(operands) == 1);
-                int op1;
-                Array_Pop(operands, &op1);
+                int op1 = Array_Pop(operands);
 
                 Array_Append(operands, EvalUnOp(cur->Op, op1));
 
@@ -170,8 +164,8 @@ int main() {
     printf("%d\n", RpnEval(expression));
 
     // Pop the last "+1" operation -> [1 2 + 2 - *]
-    Array_Pop(expression, NULL);
-    Array_Pop(expression, NULL);
+    (void) Array_Pop(expression);
+    (void) Array_Pop(expression);
 
     ItemArrayPrint(expression, " -> ");
     printf("%d\n", RpnEval(expression));
