@@ -83,8 +83,8 @@ void *HashTable_AtKey(void *table, const void *key) {
         return NULL;
     }
 
-    for (size_t i = 0; i < ArraySize(bucket); i++) {
-        void *entry = ARRAY_AT(bucket, i);
+    for (size_t i = 0; i < Array_Size(bucket); i++) {
+        void *entry = Array_At(bucket, i);
         if (0 == header->Compare(SHIFT(entry, header->KeyOffset), key, header->KeySize)) {
             return SHIFT(entry, header->ValueOffset);
         }
@@ -120,14 +120,14 @@ void *HashTable_PutEntry(void *table, const void *entry) {
     if (NULL == bucket) {
         LOG_DEBUG("Creating new bucket");
 
-        if (NULL == (bucket = ArrayNew(0, header->EntrySize))) {
+        if (NULL == (bucket = Array_New(0, header->EntrySize))) {
             LOG_ERROR("Failed to allocate a bucket");
             return NULL;
         }
     }
 
-    buckets[bucket_index] = bucket = ArrayAppend(bucket, entry);
-    return SHIFT(ARRAY_AT(bucket, ArraySize(bucket) - 1), header->ValueOffset);
+    buckets[bucket_index] = bucket = Array_AppendFrom(bucket, entry);
+    return SHIFT(Array_At(bucket, Array_Size(bucket) - 1), header->ValueOffset);
 }
 
 
@@ -165,8 +165,8 @@ void HashTable_PrintStats(void *table) {
                 empty_begin = empty_end = -1;
             }
             used_buckets_count++;
-            total_entries += ArraySize(buckets[i]);
-            printf(NAME_OF(buckets)"[%d] = Array{.Size=%d}\n", (int) i, (int) ArraySize(buckets[i]));
+            total_entries += Array_Size(buckets[i]);
+            printf(NAME_OF(buckets)"[%d] = Array{.Size=%d}\n", (int) i, (int) Array_Size(buckets[i]));
         }
     }
 
@@ -198,9 +198,9 @@ void HashTable_Free(void *table, HashTableEntryDestructor free_entry) {
         }
 
         if (NULL != free_entry) {
-            ARRAY_FOREACH_ELEMENT(bucket, free_entry);
+            Array_ForEachElement(bucket, free_entry);
         }
-        ArrayFree(bucket);
+        Array_FreeAndSetToNull(bucket);
     }
 
     free(header);
@@ -235,7 +235,7 @@ bool HashTable_HasMoreEntries(const HashTableIterator it) {
 
 void HashTable_NextEntry(HashTableIterator *it) {
     void **buckets = it->_table->Buckets;
-    if (it->EntryIndex + 1 < ArraySize(it->_table->Buckets[it->BucketIndex])) {
+    if (it->EntryIndex + 1 < Array_Size(it->_table->Buckets[it->BucketIndex])) {
         it->EntryIndex++;
         return;
     }

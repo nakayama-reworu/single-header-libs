@@ -67,42 +67,42 @@ int EvalUnOp(char op, int arg1) {
 
 
 int RpnEval(Item *expression) {
-    if (ArrayIsEmpty(expression)) {
+    if (Array_IsEmpty(expression)) {
         return 0;
     }
 
-    int *operands = ARRAY_EMPTY(int);
-    for (typeof(expression) cur = expression; cur != ARRAY_END(expression); cur++) {
+    int *operands = Array_EmptyOfType(int);
+    for (typeof(expression) cur = expression; cur != Array_End(expression); cur++) {
         switch (cur->Type) {
             case CONST:
-                ARRAY_APPEND(operands, cur->Value);
+                Array_Append(operands, cur->Value);
                 break;
             case BIN_OP: {
 //                assert(ArraySize(operands) == 2);
                 int op1, op2;
-                ArrayPop(operands, &op2);
-                ArrayPop(operands, &op1);
+                Array_Pop(operands, &op2);
+                Array_Pop(operands, &op1);
 
-                ARRAY_APPEND(operands, EvalBinOp(cur->Op, op1, op2));
+                Array_Append(operands, EvalBinOp(cur->Op, op1, op2));
 
                 break;
             }
             case UN_OP: {
 //                assert(ArraySize(operands) == 1);
                 int op1;
-                ArrayPop(operands, &op1);
+                Array_Pop(operands, &op1);
 
-                ARRAY_APPEND(operands, EvalUnOp(cur->Op, op1));
+                Array_Append(operands, EvalUnOp(cur->Op, op1));
 
                 break;
             }
         }
     }
 
-    assert(ArraySize(operands) == 1);
+    assert(Array_Size(operands) == 1);
     const int result = operands[0];
 
-    ARRAY_FREE(operands);
+    Array_FreeAndSetToNull(operands);
 
     return result;
 }
@@ -114,14 +114,14 @@ void ItemArrayPrint(Item *items, char *end) {
     }
 
     printf(NAME_OF(items)"=[");
-    for (typeof(items) item = items; item != ARRAY_END(items); item++) {
+    for (typeof(items) item = items; item != Array_End(items); item++) {
         switch (item->Type) {
             case CONST:
-                printf("%d%s", item->Value, item + 1 == ARRAY_END(items) ? "" : " ");
+                printf("%d%s", item->Value, item + 1 == Array_End(items) ? "" : " ");
                 break;
             case BIN_OP:
             case UN_OP:
-                printf("%c%s", item->Op, item + 1 == ARRAY_END(items) ? "" : " ");
+                printf("%c%s", item->Op, item + 1 == Array_End(items) ? "" : " ");
                 break;
         }
     }
@@ -133,50 +133,50 @@ void ItemArrayPrint(Item *items, char *end) {
 
 int main() {
     // Create an empty array
-    Item *expression = ARRAY_EMPTY(Item);
+    Item *expression = Array_EmptyOfType(Item);
     ItemArrayPrint(expression, "\n");
 
     // Append single value -> [1]
-    ARRAY_APPEND(expression, ItemConst(1));
+    Array_Append(expression, ItemConst(1));
     ItemArrayPrint(expression, "\n");
 
     // Extend with several values -> [1 2 +]
-    ARRAY_EXTEND_WITH(expression, ItemConst(2), ItemBinOp('+'));
+    Array_ExtendWith(expression, ItemConst(2), ItemBinOp('+'));
     ItemArrayPrint(expression, "\n");
 
     // Temporary array with more items
-    Item *minus_two = ARRAY_OF(ItemConst(2), ItemUnOp('-'));
+    Item *minus_two = Array_Of(ItemConst(2), ItemUnOp('-'));
 
     // Extend the main array with another array -> [1 2 + 2 -]
-    expression = ArrayExtend(expression, minus_two);
+    expression = Array_Extend(expression, minus_two);
     ItemArrayPrint(expression, "\n");
-    ARRAY_FREE(minus_two);
+    Array_FreeAndSetToNull(minus_two);
 
     // Extend with array literal -> [1 2 + 2 - *]
     ARRAY_EXTEND_WITH_ARRAY_LITERAL(expression, ((Item[]) {ItemBinOp('*')}));
     ItemArrayPrint(expression, "\n");
 
     // Temporary array with more items
-    Item *plus_one = ARRAY_OF_TYPE(Item, 2);
+    Item *plus_one = Array_OfType(Item, 2);
     plus_one[0] = ItemConst(1);
     plus_one[1] = ItemBinOp('+');
 
     // Extend the main array with another array -> [1 2 + 2 - * 1 +]
-    expression = ArrayExtend(expression, plus_one);
+    expression = Array_Extend(expression, plus_one);
     ItemArrayPrint(expression, "\n");
-    ARRAY_FREE(plus_one);
+    Array_FreeAndSetToNull(plus_one);
 
     ItemArrayPrint(expression, " -> ");
     printf("%d\n", RpnEval(expression));
 
     // Pop the last "+1" operation -> [1 2 + 2 - *]
-    ArrayPop(expression, NULL);
-    ArrayPop(expression, NULL);
+    Array_Pop(expression, NULL);
+    Array_Pop(expression, NULL);
 
     ItemArrayPrint(expression, " -> ");
     printf("%d\n", RpnEval(expression));
 
-    ARRAY_FREE(expression);
+    Array_FreeAndSetToNull(expression);
 
     return EXIT_SUCCESS;
 }
