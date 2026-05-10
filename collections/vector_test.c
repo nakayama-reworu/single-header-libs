@@ -229,7 +229,6 @@ Testing_Fact(Any_returns_true_if_an_elements_matches) {
     Vector_PushBack(&sut, "brown");
     Vector_PushBack(&sut, "fox");
 
-    printf("contains fox? %s\n", Vector_Any(sut, it, 0 == strcmp(it, "fox")) ? "yes" : "no");
     Testing_Assert(
             Vector_Any(sut, value, ({
                 0 == strcmp("brown", value);
@@ -266,6 +265,8 @@ Testing_Fact(Slice_handles_out_of_bounds_start) {
 
     typedef VectorSlice_Of(int) IntSlice;
 
+    Testing_Assert(Vector_Empty(Vector_SliceFrom(IntSlice, sut, sut.Size)), "expected slice to be empty");
+
     IntSlice s1 = Vector_Slice(IntSlice, sut, -42, 2);
     size_t const expectedSize1 = 2;
     Testing_Assert(expectedSize1 == s1.Size, "expected size to be %zu but was %zu", expectedSize1, s1.Size);
@@ -286,6 +287,8 @@ Testing_Fact(Slice_handles_out_of_bounds_end) {
     Vector_PushBack(&sut, 4);
 
     typedef VectorSlice_Of(int) IntSlice;
+
+    Testing_Assert(Vector_Empty(Vector_SliceTo(IntSlice, sut, 0)), "expected slice to be empty");
 
     IntSlice s1 = Vector_Slice(IntSlice, sut, 2, 42);
     size_t const expectedSize1 = 2;
