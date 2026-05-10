@@ -15,7 +15,7 @@ endif()
 
 set(DYNAMIC_ARRAY_TEST_NAME ${PROJECT_NAME}-vector)
 add_executable(${DYNAMIC_ARRAY_TEST_NAME}
-        collections/vector.c)
+        collections/vector_test.c)
 target_link_libraries(${DYNAMIC_ARRAY_TEST_NAME} m)
 target_compile_options(${DYNAMIC_ARRAY_TEST_NAME} PRIVATE -Wall -Werror -Wextra -Wpointer-arith)
 target_include_directories(${DYNAMIC_ARRAY_TEST_NAME} PRIVATE ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/collections)

@@ -1,11 +1,4 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include "call_checked.h"
-
-/*
- * Vector is a struct { size_t Size; size_t Capacity; T *Items; }
- */
+#pragma once
 
 #ifndef CallChecked
 #error Please include call_checked.h before vector.h
@@ -66,26 +59,3 @@ for (                                                       \
             ? NULL                                          \
             : &(Vec).Items[VECTOR_CONCAT(_it_, __LINE__)]   \
 )
-
-int main(void) {
-    Vector_Of(int) a = {0};
-
-    Vector_PushBack(&a, 1);
-    Vector_PushBack(&a, 2);
-    Vector_PushBack(&a, 3);
-
-    Vector_ForEach(pValue, a) {
-        printf("%d\n", *pValue);
-    }
-
-    int value;
-    while (Vector_TryPopBack(&a, &value)) {
-        printf("%d\n", value);
-    }
-
-    printf("%zu %zu %p\n", a.Size, a.Capacity, a.Items);
-    Vector_Free(&a);
-    printf("%zu %zu %p\n", a.Size, a.Capacity, a.Items);
-
-    return EXIT_SUCCESS;
-}
